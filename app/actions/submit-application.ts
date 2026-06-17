@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createSupabaseAdmin, createSupabaseClient } from "@/lib/supabase/server";
 import { sendCandidateNotification } from "@/lib/email";
+import { checkSpam } from "@/lib/spam";
 
 const applicationSchema = z.object({
   full_name: z.string().min(2, "Name is required"),
@@ -22,6 +23,8 @@ export async function submitApplication(
   _prevState: ApplicationState,
   formData: FormData
 ): Promise<ApplicationState> {
+  if (checkSpam(formData)) return { success: true };
+
   const raw = {
     full_name: formData.get("full_name"),
     email: formData.get("email"),

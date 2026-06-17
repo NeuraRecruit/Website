@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { getCvSignedUrl } from "./actions";
+import { motion, AnimatePresence } from "framer-motion";
+import { getCvSignedUrl, toggleProcessed } from "./actions";
 import { adminLogout } from "./login/actions";
 import type {
   CandidateApplication,
@@ -21,7 +22,13 @@ function formatDate(iso: string) {
   });
 }
 
-function Badge({ children, variant = "default" }: { children: React.ReactNode; variant?: "default" | "blue" | "green" }) {
+function Badge({
+  children,
+  variant = "default",
+}: {
+  children: React.ReactNode;
+  variant?: "default" | "blue" | "green";
+}) {
   const cls = {
     default: "bg-bg-secondary text-text-secondary",
     blue: "bg-accent/10 text-accent",
@@ -55,10 +62,64 @@ function CvButton({ storagePath }: { storagePath: string }) {
   );
 }
 
+type ProcessedTable =
+  | "candidate_applications"
+  | "employer_enquiries"
+  | "contact_messages";
+
+function ProcessedCheckbox({
+  id,
+  table,
+  initialProcessed,
+}: {
+  id: string;
+  table: ProcessedTable;
+  initialProcessed: boolean;
+}) {
+  const [processed, setProcessed] = useState(initialProcessed);
+  const [, startTransition] = useTransition();
+
+  const handleChange = (checked: boolean) => {
+    if (!checked) {
+      const confirmed = window.confirm(
+        "Are you sure you want to mark this as unprocessed?"
+      );
+      if (!confirmed) return;
+    }
+    setProcessed(checked);
+    startTransition(async () => {
+      await toggleProcessed(table, id, checked);
+    });
+  };
+
+  return (
+    <label className="flex cursor-pointer items-center gap-2 select-none">
+      <input
+        type="checkbox"
+        checked={processed}
+        onChange={(e) => handleChange(e.target.checked)}
+        className="h-4 w-4 rounded border-border accent-accent"
+      />
+      <span className={`text-xs font-medium ${processed ? "text-emerald-600" : "text-text-secondary"}`}>
+        {processed ? "Processed" : "Mark as processed"}
+      </span>
+    </label>
+  );
+}
+
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="rounded-xl border border-dashed border-border py-16 text-center">
       <p className="text-sm text-text-secondary">No {label} yet</p>
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">{label}</p>
+      <p className="mt-0.5 text-sm text-text-light">{value}</p>
     </div>
   );
 }
@@ -70,28 +131,33 @@ function ApplicationsTab({ items }: { items: CandidateApplication[] }) {
       {items.map((app) => (
         <div
           key={app.id}
-          className="rounded-xl border border-border bg-white p-5"
+          className={`rounded-xl border bg-white p-5 transition-colors ${
+            app.processed ? "border-emerald-200 opacity-70" : "border-border"
+          }`}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold text-text-light">{app.full_name}</p>
-              <p className="mt-0.5 text-sm text-text-secondary">
-                <a href={`mailto:${app.email}`} className="hover:text-accent">
-                  {app.email}
-                </a>{" "}
-                · {app.phone}
-              </p>
+            <p className="font-semibold text-text-light">{app.full_name}</p>
+            <div className="flex flex-col items-end gap-2">
+              <p className="text-xs text-text-secondary">{formatDate(app.created_at)}</p>
+              <ProcessedCheckbox
+                id={app.id}
+                table="candidate_applications"
+                initialProcessed={app.processed}
+              />
             </div>
-            <p className="text-xs text-text-secondary">{formatDate(app.created_at)}</p>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge variant="blue">{app.role}</Badge>
-            <Badge>{app.location}</Badge>
-            {app.cv_url ? (
-              <CvButton storagePath={app.cv_url} />
-            ) : (
-              <span className="text-xs text-text-secondary/60">No CV uploaded</span>
-            )}
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Field label="Email" value={
+              <a href={`mailto:${app.email}`} className="hover:text-accent">{app.email}</a>
+            } />
+            <Field label="Phone" value={app.phone} />
+            <Field label="Preferred role" value={app.role} />
+            <Field label="Preferred location" value={app.location} />
+            <Field label="CV" value={
+              app.cv_url
+                ? <CvButton storagePath={app.cv_url} />
+                : <span className="text-text-secondary/60">Not uploaded</span>
+            } />
           </div>
         </div>
       ))}
@@ -104,23 +170,36 @@ function EnquiriesTab({ items }: { items: EmployerEnquiry[] }) {
   return (
     <div className="space-y-3">
       {items.map((enq) => (
-        <div key={enq.id} className="rounded-xl border border-border bg-white p-5">
+        <div
+          key={enq.id}
+          className={`rounded-xl border bg-white p-5 transition-colors ${
+            enq.processed ? "border-emerald-200 opacity-70" : "border-border"
+          }`}
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold text-text-light">{enq.company_name}</p>
-              <p className="mt-0.5 text-sm text-text-secondary">
-                {enq.contact_name} ·{" "}
-                <a href={`mailto:${enq.email}`} className="hover:text-accent">
-                  {enq.email}
-                </a>{" "}
-                · {enq.phone}
-              </p>
+            <p className="font-semibold text-text-light">{enq.company_name}</p>
+            <div className="flex flex-col items-end gap-2">
+              <p className="text-xs text-text-secondary">{formatDate(enq.created_at)}</p>
+              <ProcessedCheckbox
+                id={enq.id}
+                table="employer_enquiries"
+                initialProcessed={enq.processed}
+              />
             </div>
-            <p className="text-xs text-text-secondary">{formatDate(enq.created_at)}</p>
           </div>
-          <p className="mt-3 rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
-            {enq.message}
-          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Field label="Contact name" value={enq.contact_name} />
+            <Field label="Email" value={
+              <a href={`mailto:${enq.email}`} className="hover:text-accent">{enq.email}</a>
+            } />
+            <Field label="Phone" value={enq.phone} />
+          </div>
+          <div className="mt-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">Hiring needs</p>
+            <p className="mt-1.5 rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
+              {enq.message}
+            </p>
+          </div>
         </div>
       ))}
     </div>
@@ -132,28 +211,39 @@ function MessagesTab({ items }: { items: ContactMessage[] }) {
   return (
     <div className="space-y-3">
       {items.map((msg) => (
-        <div key={msg.id} className="rounded-xl border border-border bg-white p-5">
+        <div
+          key={msg.id}
+          className={`rounded-xl border bg-white p-5 transition-colors ${
+            msg.processed ? "border-emerald-200 opacity-70" : "border-border"
+          }`}
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-text-light">{msg.full_name}</p>
-                {msg.request_callback && (
-                  <Badge variant="green">Callback requested</Badge>
-                )}
-              </div>
-              <p className="mt-0.5 text-sm text-text-secondary">
-                <a href={`mailto:${msg.email}`} className="hover:text-accent">
-                  {msg.email}
-                </a>
-                {msg.phone && ` · ${msg.phone}`}
-                {msg.company && ` · ${msg.company}`}
-              </p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-text-light">{msg.full_name}</p>
+              {msg.request_callback && <Badge variant="green">Callback requested</Badge>}
             </div>
-            <p className="text-xs text-text-secondary">{formatDate(msg.created_at)}</p>
+            <div className="flex flex-col items-end gap-2">
+              <p className="text-xs text-text-secondary">{formatDate(msg.created_at)}</p>
+              <ProcessedCheckbox
+                id={msg.id}
+                table="contact_messages"
+                initialProcessed={msg.processed}
+              />
+            </div>
           </div>
-          <p className="mt-3 rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
-            {msg.message}
-          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Field label="Email" value={
+              <a href={`mailto:${msg.email}`} className="hover:text-accent">{msg.email}</a>
+            } />
+            {msg.phone && <Field label="Phone" value={msg.phone} />}
+            {msg.company && <Field label="Company" value={msg.company} />}
+          </div>
+          <div className="mt-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">Message</p>
+            <p className="mt-1.5 rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
+              {msg.message}
+            </p>
+          </div>
         </div>
       ))}
     </div>
@@ -179,8 +269,8 @@ export function AdminDashboard({
 
   return (
     <div className="min-h-screen bg-bg-secondary">
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
               Neura Recruitment
@@ -190,44 +280,59 @@ export function AdminDashboard({
           <form action={adminLogout}>
             <button
               type="submit"
-              className="rounded-lg border border-border px-4 py-2 text-sm text-text-secondary transition-colors hover:text-text-light"
+              className="rounded-lg border border-border bg-white px-4 py-2 text-sm text-text-secondary transition-colors hover:text-text-light"
             >
               Sign out
             </button>
           </form>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <div className="flex gap-1 rounded-xl border border-border bg-white p-1">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-                tab === t.id
-                  ? "bg-accent text-white shadow-sm"
-                  : "text-text-secondary hover:text-text-light"
+              className={`relative flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                tab === t.id ? "text-white" : "text-text-secondary hover:text-text-light"
               }`}
             >
-              {t.label}
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                  tab === t.id ? "bg-white/20 text-white" : "bg-bg-secondary text-text-secondary"
-                }`}
-              >
-                {t.count}
+              {tab === t.id && (
+                <motion.span
+                  layoutId="admin-tab-indicator"
+                  className="absolute inset-0 rounded-lg bg-accent shadow-sm"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                {t.label}
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    tab === t.id ? "bg-white/20 text-white" : "bg-bg-secondary text-text-secondary"
+                  }`}
+                >
+                  {t.count}
+                </span>
               </span>
             </button>
           ))}
         </div>
 
-        <div className="mt-6">
-          {tab === "applications" && <ApplicationsTab items={applications} />}
-          {tab === "enquiries" && <EnquiriesTab items={enquiries} />}
-          {tab === "messages" && <MessagesTab items={messages} />}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="mt-6"
+          >
+            {tab === "applications" && <ApplicationsTab items={applications} />}
+            {tab === "enquiries" && <EnquiriesTab items={enquiries} />}
+            {tab === "messages" && <MessagesTab items={messages} />}
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );
 }
+

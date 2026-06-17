@@ -11,6 +11,7 @@ export type CandidateApplication = {
   location: string;
   cv_url: string | null;
   created_at: string;
+  processed: boolean;
 };
 
 export type EmployerEnquiry = {
@@ -21,6 +22,7 @@ export type EmployerEnquiry = {
   phone: string;
   message: string;
   created_at: string;
+  processed: boolean;
 };
 
 export type ContactMessage = {
@@ -32,7 +34,23 @@ export type ContactMessage = {
   message: string;
   request_callback: boolean;
   created_at: string;
+  processed: boolean;
 };
+
+type SubmissionTable =
+  | "candidate_applications"
+  | "employer_enquiries"
+  | "contact_messages";
+
+export async function toggleProcessed(
+  table: SubmissionTable,
+  id: string,
+  processed: boolean
+): Promise<void> {
+  const admin = createSupabaseAdmin();
+  const { error } = await admin.from(table).update({ processed }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
 
 export async function getApplications(): Promise<CandidateApplication[]> {
   const admin = createSupabaseAdmin();

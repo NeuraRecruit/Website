@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
-import { SiteLayout } from "@/components/layout/SiteLayout";
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -96,7 +95,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <SiteLayout>{children}</SiteLayout>
+        {children}
       </body>
     </html>
   );

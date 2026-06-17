@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, FileInput } from "@/components/ui/FormFields";
 import { LOCATIONS } from "@/data/jobs";
@@ -21,6 +21,10 @@ type CandidateFormProps = {
 export function CandidateForm({ defaultRole = "", defaultLocation = "" }: CandidateFormProps) {
   const [state, formAction, pending] = useActionState(submitApplication, initialState);
   const [cvError, setCvError] = useState<string | null>(null);
+  const loadedAtRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (loadedAtRef.current) loadedAtRef.current.value = String(Date.now());
+  }, []);
 
   if (state.success) {
     return (
@@ -39,6 +43,10 @@ export function CandidateForm({ defaultRole = "", defaultLocation = "" }: Candid
 
   return (
     <form action={formAction} className="space-y-5">
+      {/* Honeypot — hidden from humans, bots fill it */}
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: "none" }} />
+      <input type="hidden" name="form_loaded_at" ref={loadedAtRef} />
+
       {(state.error) && (
         <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {state.error}

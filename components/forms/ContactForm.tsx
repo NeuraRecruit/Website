@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/FormFields";
 import { submitContact, type ContactState } from "@/app/actions/submit-contact";
@@ -19,6 +19,10 @@ export function ContactForm({
   const [state, formAction, pending] = useActionState(submitContact, initialState);
   const [wantsCallback, setWantsCallback] = useState(requestCallback);
   const [phoneError, setPhoneError] = useState<string | undefined>();
+  const loadedAtRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (loadedAtRef.current) loadedAtRef.current.value = String(Date.now());
+  }, []);
 
   useEffect(() => {
     setWantsCallback(requestCallback);
@@ -78,6 +82,9 @@ export function ContactForm({
   return (
     <form action={formAction} onSubmit={handleSubmit} className="space-y-5">
       <input type="hidden" name="request_callback" value={wantsCallback ? "true" : "false"} />
+      {/* Honeypot — hidden from humans, bots fill it */}
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: "none" }} />
+      <input type="hidden" name="form_loaded_at" ref={loadedAtRef} />
 
       {state.error && (
         <div

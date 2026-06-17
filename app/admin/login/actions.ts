@@ -23,7 +23,7 @@ export async function adminLogin(formData: FormData) {
   redirect("/admin");
 }
 
-export async function adminLogout() {
+export async function adminLogout(_formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.delete("admin_session");
   redirect("/admin/login");

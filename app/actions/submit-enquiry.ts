@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createSupabaseClient } from "@/lib/supabase/server";
 import { sendEnquiryNotification } from "@/lib/email";
+import { checkSpam } from "@/lib/spam";
 
 const enquirySchema = z.object({
   company_name: z.string().min(2, "Company name is required"),
@@ -22,6 +23,8 @@ export async function submitEnquiry(
   _prevState: EnquiryState,
   formData: FormData
 ): Promise<EnquiryState> {
+  if (checkSpam(formData)) return { success: true };
+
   const raw = {
     company_name: formData.get("company_name"),
     contact_name: formData.get("contact_name"),

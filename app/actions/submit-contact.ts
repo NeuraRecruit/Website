@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createSupabaseClient } from "@/lib/supabase/server";
 import { sendContactNotification } from "@/lib/email";
+import { checkSpam } from "@/lib/spam";
 
 const contactSchema = z
   .object({
@@ -34,6 +35,8 @@ export async function submitContact(
   _prevState: ContactState,
   formData: FormData
 ): Promise<ContactState> {
+  if (checkSpam(formData)) return { success: true };
+
   const raw = {
     full_name: formData.get("full_name"),
     email: formData.get("email"),

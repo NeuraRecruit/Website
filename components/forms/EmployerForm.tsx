@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/FormFields";
 import { submitEnquiry, type EnquiryState } from "@/app/actions/submit-enquiry";
@@ -9,6 +9,10 @@ const initialState: EnquiryState = {};
 
 export function EmployerForm() {
   const [state, formAction, pending] = useActionState(submitEnquiry, initialState);
+  const loadedAtRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (loadedAtRef.current) loadedAtRef.current.value = String(Date.now());
+  }, []);
 
   if (state.success) {
     return (
@@ -27,6 +31,10 @@ export function EmployerForm() {
 
   return (
     <form action={formAction} className="space-y-5">
+      {/* Honeypot — hidden from humans, bots fill it */}
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: "none" }} />
+      <input type="hidden" name="form_loaded_at" ref={loadedAtRef} />
+
       {state.error && (
         <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
           {state.error}
