@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { ContactForm } from "@/components/forms/ContactForm";
-import { CONTACT } from "@/lib/constants";
 import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 
@@ -17,16 +16,7 @@ export function ContactSection() {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
-        <a
-          href={`mailto:${CONTACT.email}`}
-          className="text-sm text-text-secondary transition-colors hover:text-text-light"
-        >
-          {CONTACT.email}
-        </a>
-        <span aria-hidden="true" className="hidden text-border sm:inline">
-          |
-        </span>
+      <div className="flex justify-center">
         <button
           type="button"
           onClick={handleRequestCallback}
