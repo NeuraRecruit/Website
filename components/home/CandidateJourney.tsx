@@ -68,7 +68,7 @@ const steps = [
 
 const SCROLL_SPEED = 1.2;
 const RESUME_DELAY = 2000;
-const START_DELAY = 1500;
+const START_DELAY = 2500;
 
 function useAutoScroll() {
   const scrollRef = useRef<HTMLDivElement>(null);
