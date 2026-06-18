@@ -146,10 +146,12 @@ function ApplicationsTab({ items }: { items: CandidateApplication[] }) {
               />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Email" value={
-              <a href={`mailto:${app.email}`} className="hover:text-accent">{app.email}</a>
-            } />
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
+            <div className="col-span-2 lg:col-span-3">
+              <Field label="Email" value={
+                <a href={`mailto:${app.email}`} className="hover:text-accent">{app.email}</a>
+              } />
+            </div>
             <Field label="Phone" value={app.phone} />
             <Field label="Preferred role" value={app.role} />
             <Field label="Preferred location" value={app.location} />
@@ -187,12 +189,14 @@ function EnquiriesTab({ items }: { items: EmployerEnquiry[] }) {
               />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
             <Field label="Contact name" value={enq.contact_name} />
-            <Field label="Email" value={
-              <a href={`mailto:${enq.email}`} className="hover:text-accent">{enq.email}</a>
-            } />
             <Field label="Phone" value={enq.phone} />
+            <div className="col-span-2 lg:col-span-1">
+              <Field label="Email" value={
+                <a href={`mailto:${enq.email}`} className="hover:text-accent">{enq.email}</a>
+              } />
+            </div>
           </div>
           <div className="mt-3">
             <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">Hiring needs</p>
@@ -231,10 +235,12 @@ function MessagesTab({ items }: { items: ContactMessage[] }) {
               />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Email" value={
-              <a href={`mailto:${msg.email}`} className="hover:text-accent">{msg.email}</a>
-            } />
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
+            <div className="col-span-2 lg:col-span-3">
+              <Field label="Email" value={
+                <a href={`mailto:${msg.email}`} className="hover:text-accent">{msg.email}</a>
+              } />
+            </div>
             {msg.phone && <Field label="Phone" value={msg.phone} />}
             {msg.company && <Field label="Company" value={msg.company} />}
           </div>
@@ -303,8 +309,9 @@ export function AdminDashboard({
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <span className="relative z-10 flex flex-col items-center gap-0.5 sm:flex-row sm:gap-2">
-                {t.label}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <span className="sm:hidden">{t.label === "Applications" ? "Apps" : t.label}</span>
+                <span className="hidden sm:inline">{t.label}</span>
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
                     tab === t.id ? "bg-white/20 text-white" : "bg-bg-secondary text-text-secondary"
