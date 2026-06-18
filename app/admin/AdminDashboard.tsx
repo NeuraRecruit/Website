@@ -131,13 +131,13 @@ function ApplicationsTab({ items }: { items: CandidateApplication[] }) {
       {items.map((app) => (
         <div
           key={app.id}
-          className={`rounded-xl border bg-white p-5 transition-colors ${
+          className={`rounded-xl border bg-white p-4 transition-colors sm:p-5 ${
             app.processed ? "border-emerald-200 opacity-70" : "border-border"
           }`}
         >
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <p className="font-semibold text-text-light">{app.full_name}</p>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
               <p className="text-xs text-text-secondary">{formatDate(app.created_at)}</p>
               <ProcessedCheckbox
                 id={app.id}
@@ -172,13 +172,13 @@ function EnquiriesTab({ items }: { items: EmployerEnquiry[] }) {
       {items.map((enq) => (
         <div
           key={enq.id}
-          className={`rounded-xl border bg-white p-5 transition-colors ${
+          className={`rounded-xl border bg-white p-4 transition-colors sm:p-5 ${
             enq.processed ? "border-emerald-200 opacity-70" : "border-border"
           }`}
         >
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <p className="font-semibold text-text-light">{enq.company_name}</p>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
               <p className="text-xs text-text-secondary">{formatDate(enq.created_at)}</p>
               <ProcessedCheckbox
                 id={enq.id}
@@ -213,16 +213,16 @@ function MessagesTab({ items }: { items: ContactMessage[] }) {
       {items.map((msg) => (
         <div
           key={msg.id}
-          className={`rounded-xl border bg-white p-5 transition-colors ${
+          className={`rounded-xl border bg-white p-4 transition-colors sm:p-5 ${
             msg.processed ? "border-emerald-200 opacity-70" : "border-border"
           }`}
         >
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-text-light">{msg.full_name}</p>
               {msg.request_callback && <Badge variant="green">Callback requested</Badge>}
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
               <p className="text-xs text-text-secondary">{formatDate(msg.created_at)}</p>
               <ProcessedCheckbox
                 id={msg.id}
@@ -292,7 +292,7 @@ export function AdminDashboard({
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`relative flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+              className={`relative flex flex-1 items-center justify-center rounded-lg px-2 py-2.5 text-xs font-medium transition-colors sm:px-4 sm:text-sm ${
                 tab === t.id ? "text-white" : "text-text-secondary hover:text-text-light"
               }`}
             >
@@ -303,10 +303,10 @@ export function AdminDashboard({
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <span className="relative z-10 flex items-center gap-2">
+              <span className="relative z-10 flex flex-col items-center gap-0.5 sm:flex-row sm:gap-2">
                 {t.label}
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
                     tab === t.id ? "bg-white/20 text-white" : "bg-bg-secondary text-text-secondary"
                   }`}
                 >

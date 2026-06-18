@@ -41,13 +41,11 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [{ url: "/images/hero-poster.webp", width: 1920, height: 1080, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ["/images/hero-poster.webp"],
   },
   robots: { index: true, follow: true },
 };
