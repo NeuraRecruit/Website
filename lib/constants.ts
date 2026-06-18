@@ -19,6 +19,6 @@ export const CONTACT = {
 };
 
 export const SOCIALS = [
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "Instagram", href: "https://instagram.com" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/neura-recruitment/" },
+  { label: "Instagram", href: "https://www.instagram.com/neurarecruitment" },
 ] as const;

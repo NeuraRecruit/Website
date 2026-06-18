@@ -14,22 +14,23 @@ export function Footer() {
           >
             Neura
           </Link>
-          <p className="mt-4 whitespace-nowrap text-sm text-text-secondary">
+          <p className="mt-4 text-sm text-text-secondary">
             Building the teams that build the future. Premium recruitment across the UK.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-8">
-          <div className="flex flex-col items-center sm:items-start">
-            <h3 className="text-sm font-medium uppercase tracking-wider text-text-light">
+        <div className="grid grid-cols-3 gap-4 sm:gap-8">
+          {/* Navigation */}
+          <div>
+            <h3 className="text-xs font-medium uppercase tracking-wider text-text-light sm:text-sm">
               Navigation
             </h3>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 space-y-2 sm:space-y-3">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-text-secondary transition-colors hover:text-text-light"
+                    className="text-xs text-text-secondary transition-colors hover:text-text-light sm:text-sm"
                   >
                     {link.label}
                   </Link>
@@ -38,15 +39,16 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Contact */}
           <div className="text-center">
-            <h3 className="text-sm font-medium uppercase tracking-wider text-text-light">
+            <h3 className="text-xs font-medium uppercase tracking-wider text-text-light sm:text-sm">
               Contact
             </h3>
-            <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+            <ul className="mt-3 space-y-2 text-xs text-text-secondary sm:space-y-3 sm:text-sm">
               <li>
                 <a
                   href={`mailto:${CONTACT.email}`}
-                  className="transition-colors hover:text-text-light"
+                  className="break-all transition-colors hover:text-text-light"
                 >
                   {CONTACT.email}
                 </a>
@@ -55,18 +57,19 @@ export function Footer() {
             </ul>
           </div>
 
-          <div className="text-center sm:text-right">
-            <h3 className="text-sm font-medium uppercase tracking-wider text-text-light">
+          {/* Social */}
+          <div className="text-right">
+            <h3 className="text-xs font-medium uppercase tracking-wider text-text-light sm:text-sm">
               Social
             </h3>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-3 space-y-2 sm:space-y-3">
               {SOCIALS.map((social) => (
                 <li key={social.label}>
                   <a
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-text-secondary transition-colors hover:text-text-light"
+                    className="text-xs text-text-secondary transition-colors hover:text-text-light sm:text-sm"
                   >
                     {social.label}
                   </a>

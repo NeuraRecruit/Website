@@ -1,6 +1,5 @@
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
-import { StickyCTA } from "./StickyCTA";
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +9,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <Footer />
-      <StickyCTA />
     </>
   );
 }

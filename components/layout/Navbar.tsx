@@ -45,11 +45,13 @@ export function Navbar() {
           className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8"
           aria-label="Main navigation"
         >
-          <Link
-            href="/"
-            className="font-heading text-xl font-semibold tracking-tight text-text-light sm:text-2xl"
-          >
-            Neura
+          <Link href="/" className="shrink-0" style={{ marginLeft: "-12px" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/neura-logo.png"
+              alt="Neura Recruitment"
+              style={{ height: "36px", width: "auto", display: "block" }}
+            />
           </Link>
 
           {/* Desktop nav */}
