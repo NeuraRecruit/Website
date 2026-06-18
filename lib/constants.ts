@@ -1,7 +1,7 @@
 export const SITE_NAME = "Neura Recruitment";
 export const SITE_TAGLINE = "Building the teams that build the future.";
 export const SITE_DESCRIPTION =
-  "A modern relationship-driven recruitment partner connecting construction professionals with exceptional opportunities across the UK.";
+  "A modern relationship-driven recruitment partner connecting professionals with exceptional opportunities across the UK.";
 
 export const NAV_LINKS = [
   { href: "/", label: "Home" },

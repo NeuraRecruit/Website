@@ -23,7 +23,7 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   metadataBase: new URL("https://neurarecruitment.com"),
   title: {
-    default: `${SITE_NAME} | Construction Recruitment UK`,
+    default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -39,13 +39,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_GB",
     siteName: SITE_NAME,
-    title: `${SITE_NAME} | Construction Recruitment UK`,
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: [{ url: "/images/hero-poster.webp", width: 1920, height: 1080, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} | Construction Recruitment UK`,
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: ["/images/hero-poster.webp"],
   },
