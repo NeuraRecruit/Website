@@ -1,16 +1,8 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = `Neura Recruitment <${process.env.GMAIL_USER ?? "hello@neurarecruitment.com"}>`;
+const FROM = "Neura Recruitment <hello@neurarecruitment.com>";
 const TO = "hello@neurarecruitment.com";
 
 function row(label: string, value: string) {
@@ -51,7 +43,7 @@ ${row("Location", data.location)}
 ${row("CV", cvLine)}
 </table>`;
 
-  await transporter.sendMail({
+  await resend.emails.send({
     from: FROM,
     to: TO,
     subject: `New candidate application — ${data.role} (${data.location})`,
@@ -74,7 +66,7 @@ ${row("Phone", data.phone)}
 ${row("Message", `<span style="white-space:pre-wrap">${data.message}</span>`)}
 </table>`;
 
-  await transporter.sendMail({
+  await resend.emails.send({
     from: FROM,
     to: TO,
     subject: `New employer enquiry — ${data.company_name}`,
@@ -99,7 +91,7 @@ ${row("Callback?", data.request_callback ? "Yes — please call" : "No")}
 ${row("Message", `<span style="white-space:pre-wrap">${data.message}</span>`)}
 </table>`;
 
-  await transporter.sendMail({
+  await resend.emails.send({
     from: FROM,
     to: TO,
     subject: `New contact message${data.request_callback ? " (callback requested)" : ""} — ${data.full_name}`,
