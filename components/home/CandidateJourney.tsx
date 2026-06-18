@@ -68,6 +68,7 @@ const steps = [
 
 const SCROLL_SPEED = 1.2;
 const RESUME_DELAY = 2000;
+const START_DELAY = 1500;
 
 function useAutoScroll() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -119,7 +120,9 @@ function useAutoScroll() {
       ([entry]) => {
         if (entry.isIntersecting) {
           pausedRef.current = false;
-          startAnim();
+          setTimeout(() => {
+            if (!pausedRef.current) startAnim();
+          }, START_DELAY);
         } else {
           pausedRef.current = true;
           stopAnim();
