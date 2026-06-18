@@ -23,11 +23,11 @@ export function EmployerCTA() {
           }}
         />
         <h2 className="relative text-3xl font-semibold tracking-tight text-text-light sm:text-4xl lg:text-5xl">
-          Need construction talent?
+          Need talent?
         </h2>
         <p className="relative mx-auto mt-4 max-w-xl text-base text-text-secondary sm:text-lg">
           Partner with Neura to access a network of skilled professionals across
-          every discipline in UK construction.
+          every discipline in the UK.
         </p>
         <div className="relative mt-8">
           <Button href="/apply?type=client" size="lg">

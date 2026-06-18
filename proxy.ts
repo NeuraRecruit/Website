@@ -31,7 +31,8 @@ export function proxy(req: NextRequest) {
   }
   if (pathname.startsWith("/admin")) {
     const session = req.cookies.get(SESSION_COOKIE);
-    if (!session || session.value !== "1") {
+    const expected = process.env.ADMIN_SESSION_SECRET;
+    if (!session || !expected || session.value !== expected) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/admin/login";
       return NextResponse.redirect(loginUrl);

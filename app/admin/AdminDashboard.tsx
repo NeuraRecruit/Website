@@ -117,9 +117,9 @@ function EmptyState({ label }: { label: string }) {
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">{label}</p>
-      <p className="mt-0.5 text-sm text-text-light">{value}</p>
+      <p className="mt-0.5 break-all text-sm text-text-light">{value}</p>
     </div>
   );
 }
@@ -146,7 +146,7 @@ function ApplicationsTab({ items }: { items: CandidateApplication[] }) {
               />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Email" value={
               <a href={`mailto:${app.email}`} className="hover:text-accent">{app.email}</a>
             } />
@@ -187,7 +187,7 @@ function EnquiriesTab({ items }: { items: EmployerEnquiry[] }) {
               />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Contact name" value={enq.contact_name} />
             <Field label="Email" value={
               <a href={`mailto:${enq.email}`} className="hover:text-accent">{enq.email}</a>
@@ -231,7 +231,7 @@ function MessagesTab({ items }: { items: ContactMessage[] }) {
               />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Email" value={
               <a href={`mailto:${msg.email}`} className="hover:text-accent">{msg.email}</a>
             } />
