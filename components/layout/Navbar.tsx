@@ -45,7 +45,7 @@ export function Navbar() {
           className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8"
           aria-label="Main navigation"
         >
-          <Link href="/" className="shrink-0" style={{ marginLeft: "-12px" }}>
+          <Link href="/" className="shrink-0" style={{ marginLeft: "-8px" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/neura-logo.png"
@@ -80,7 +80,8 @@ export function Navbar() {
 
             <button
               type="button"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-text-light lg:hidden"
+              className="flex h-11 w-11 items-center justify-center text-text-light lg:hidden"
+              style={{ marginRight: "-8px" }}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(!mobileOpen)}
