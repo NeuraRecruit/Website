@@ -26,8 +26,8 @@ export function EmployerCTA() {
           Need talent?
         </h2>
         <p className="relative mx-auto mt-4 max-w-xl text-base text-text-secondary sm:text-lg">
-          Partner with Neura to access a network of skilled professionals across
-          every discipline in the UK.
+          Partner with Neura to access skilled health &amp; safety and construction
+          professionals across the UK.
         </p>
         <div className="relative mt-8">
           <Button href="/apply?type=client" size="lg">

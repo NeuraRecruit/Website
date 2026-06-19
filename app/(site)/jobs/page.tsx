@@ -26,7 +26,7 @@ export default function JobsPage() {
     <Section className="min-h-[80vh] pt-28 sm:pt-32">
       <SectionHeader
         eyebrow="Opportunities"
-        title="Construction roles across the UK"
+        title="Health & safety & construction roles across the UK"
         description="Browse our recent opportunities. All listed roles are currently filled — register your interest for future openings."
         align="left"
       />

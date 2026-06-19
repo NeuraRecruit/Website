@@ -15,9 +15,9 @@ export function TrustedAcrossConstruction() {
   return (
     <Section blueprint secondary>
       <SectionHeader
-        eyebrow="Trusted Across Construction"
+        eyebrow="Trusted Across Health & Safety & Construction"
         title="Results that speak for themselves"
-        description="We partner with leading construction firms across the UK to deliver exceptional talent."
+        description="We partner with leading health & safety teams and construction firms across the UK to deliver exceptional talent."
       />
       <motion.div
         variants={staggerContainer}

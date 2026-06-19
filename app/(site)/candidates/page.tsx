@@ -7,7 +7,7 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 export const metadata: Metadata = {
   title: "Candidates",
   description:
-    "Join Neura Recruitment's network of construction professionals. Access exclusive opportunities, career progression, and ongoing support across the UK.",
+    "Join Neura Recruitment's network of health & safety and construction professionals. Access exclusive opportunities, career progression, and ongoing support across the UK.",
 };
 
 const benefits = [
@@ -19,12 +19,12 @@ const benefits = [
   {
     title: "Access to Opportunities",
     description:
-      "Gain access to roles across leading construction firms — many exclusive to Neura's network.",
+      "Gain access to health & safety and construction roles across leading firms — many exclusive to Neura's network.",
   },
   {
     title: "Industry Expertise",
     description:
-      "Our team knows construction inside out. We speak your language and understand what makes a great fit.",
+      "Our team knows health & safety and construction inside out. We speak your language and understand what makes a great fit.",
   },
   {
     title: "Ongoing Support",
@@ -40,12 +40,14 @@ export default function CandidatesPage() {
         <SectionHeader
           eyebrow="For Candidates"
           title="Your next role starts here"
-          description="Whether you're a skilled tradesperson or a senior site manager, Neura connects you with opportunities that match your ambitions."
-          align="left"
+          description="Whether you're a skilled tradesperson or a senior site manager, Neura connects you with health &amp; safety and construction opportunities that match your ambitions."
+          align="center"
         />
-        <Button href="/apply?type=worker" size="lg">
-          Apply Now
-        </Button>
+        <div className="mt-6 text-center">
+          <Button href="/apply?type=worker" size="lg">
+            Apply Now
+          </Button>
+        </div>
       </Section>
 
       <Section secondary>

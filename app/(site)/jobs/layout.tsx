@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { JOBS } from "@/data/jobs";
 
 export const metadata: Metadata = {
-  title: "Construction Jobs UK",
+  title: "Health & Safety & Construction Jobs UK",
   description:
-    "Browse construction job opportunities across the UK. Site managers, electricians, carpenters, engineers and more. Apply with Neura Recruitment.",
+    "Browse health & safety and construction job opportunities across the UK. HSE advisors, site managers, electricians, engineers and more. Apply with Neura Recruitment.",
 };
 
 const itemListJsonLd = {

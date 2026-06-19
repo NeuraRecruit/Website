@@ -15,7 +15,7 @@ export function Footer() {
             Neura
           </Link>
           <p className="mt-4 text-sm text-text-secondary">
-            Building the teams that build the future. Premium recruitment across the UK.
+            Building the teams that build the future. Specialists in health &amp; safety and construction recruitment across the UK.
           </p>
         </div>
 

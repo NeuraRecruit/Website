@@ -6,14 +6,14 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 export const metadata: Metadata = {
   title: "Employers",
   description:
-    "Hire skilled construction professionals with Neura Recruitment. Access our talent network for faster placements, reliability, and retention.",
+    "Hire skilled health & safety and construction professionals with Neura Recruitment. Whatever your industry, we'll match you with the right talent — faster placements, reliability, and retention.",
 };
 
 const outcomes = [
   {
     title: "Talent Network",
     description:
-      "Access a curated network of pre-vetted construction professionals across every trade and discipline.",
+      "Access a curated network of pre-vetted health & safety and construction professionals — from HSE managers to site operatives.",
   },
   {
     title: "Speed",
@@ -38,9 +38,9 @@ export default function EmployersPage() {
       <Section className="pt-28 sm:pt-32" blueprint>
         <SectionHeader
           eyebrow="For Employers"
-          title="Construction talent, delivered"
-          description="Partner with Neura to solve your hiring challenges with speed, quality, and reliability."
-          align="left"
+          title="Health & safety & construction talent, delivered"
+          description="Partner with Neura to solve your hiring challenges with speed, quality, and reliability. We specialise in health &amp; safety and construction — but whatever your industry, you're welcome to get in touch and we'll match you with the right role."
+          align="center"
         />
       </Section>
 
@@ -62,7 +62,7 @@ export default function EmployersPage() {
           eyebrow="Get in Touch"
           title="Book a consultation"
           description="Tell us about your hiring needs and we'll be in touch to discuss how Neura can help."
-          align="left"
+          align="center"
         />
         <div className="mx-auto max-w-2xl">
           <EmployerForm />

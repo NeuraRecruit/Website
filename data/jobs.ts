@@ -12,10 +12,50 @@ export type Job = {
 export const ALL_ROLES_FILLED = true;
 
 export const JOBS: Job[] = [
+  // Health & Safety roles
+  {
+    id: "7",
+    role: "HSE Advisor",
+    location: "London",
+    trade: "Health & Safety",
+    salary: "£45,000 – £55,000",
+    salaryMin: 45000,
+    featured: true,
+    filled: true,
+  },
+  {
+    id: "8",
+    role: "Health & Safety Manager",
+    location: "Manchester",
+    trade: "Health & Safety",
+    salary: "£60,000 – £70,000",
+    salaryMin: 60000,
+    featured: true,
+    filled: true,
+  },
+  {
+    id: "9",
+    role: "NEBOSH Safety Officer",
+    location: "Birmingham",
+    trade: "Health & Safety",
+    salary: "£40,000 – £50,000",
+    salaryMin: 40000,
+    filled: true,
+  },
+  {
+    id: "10",
+    role: "CDM Consultant",
+    location: "Leeds",
+    trade: "Health & Safety",
+    salary: "£50,000 – £60,000",
+    salaryMin: 50000,
+    filled: true,
+  },
+  // Construction roles
   {
     id: "1",
     role: "Labourer",
-    location: "Sittingbourne",
+    location: "London",
     trade: "Trades & Labour",
     salary: "£13 – £15/hr",
     salaryMin: 27040,
@@ -25,11 +65,10 @@ export const JOBS: Job[] = [
   {
     id: "2",
     role: "Labourer",
-    location: "Croydon",
+    location: "London",
     trade: "Trades & Labour",
     salary: "£13 – £15/hr",
     salaryMin: 27040,
-    featured: true,
     filled: true,
   },
   {
@@ -74,18 +113,22 @@ export const JOBS: Job[] = [
 
 export const TRADES = [
   "All Trades",
+  "Health & Safety",
   "Trades & Labour",
   "Site Management",
 ] as const;
 
 export const LOCATIONS = [
   "All Locations",
-  "Sittingbourne",
-  "Croydon",
   "London",
   "Manchester",
+  "Birmingham",
+  "Leeds",
+  "Liverpool",
   "Bristol",
   "Sheffield",
+  "Newcastle",
+  "Nottingham",
 ] as const;
 
 export const SALARY_RANGES = [
