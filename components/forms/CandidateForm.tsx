@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, FileInput } from "@/components/ui/FormFields";
@@ -120,6 +121,17 @@ export function CandidateForm({ defaultRole = "", defaultLocation = "" }: Candid
           <p className="mt-2 text-sm text-red-600">{cvError}</p>
         )}
       </div>
+
+      <p className="text-xs text-text-secondary">
+        By submitting this form you acknowledge our{" "}
+        <Link
+          href="/candidate-privacy"
+          className="text-accent underline underline-offset-2 hover:text-accent/80"
+        >
+          Candidate Privacy Policy
+        </Link>
+        .
+      </p>
 
       <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={pending}>
         {pending ? "Submitting..." : "Submit Application"}

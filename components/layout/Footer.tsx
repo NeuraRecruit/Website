@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CONTACT, NAV_LINKS, SITE_NAME, SOCIALS } from "@/lib/constants";
+import { CONTACT, LEGAL_LINKS, NAV_LINKS, SITE_NAME, SOCIALS } from "@/lib/constants";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -79,13 +79,26 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-border pt-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-          <p className="text-xs text-text-secondary">
-            {SITE_NAME} Ltd. Company No. 17274084. Registered in England & Wales.
-          </p>
-          <p className="text-xs text-text-secondary">
-            &copy; {year} {SITE_NAME}. All rights reserved.
-          </p>
+        <div className="mt-12 border-t border-border pt-8">
+          <div className="mb-4 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            {LEGAL_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-xs text-text-secondary transition-colors hover:text-text-light"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+            <p className="text-xs text-text-secondary">
+              {SITE_NAME} Ltd. Company No. 17274084. Registered in England & Wales.
+            </p>
+            <p className="text-xs text-text-secondary">
+              &copy; {year} {SITE_NAME}. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

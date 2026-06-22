@@ -25,3 +25,9 @@ export const SOCIALS = [
   { label: "LinkedIn", href: "https://www.linkedin.com/company/neura-recruitment/" },
   { label: "Instagram", href: "https://www.instagram.com/neurarecruitment" },
 ] as const;
+
+export const LEGAL_LINKS = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/candidate-privacy", label: "Candidate Privacy" },
+  { href: "/cookies", label: "Cookie Policy" },
+] as const;

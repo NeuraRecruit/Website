@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/FormFields";
@@ -84,6 +85,17 @@ export function EmployerForm() {
         required
         error={state.fieldErrors?.message?.[0]}
       />
+
+      <p className="text-xs text-text-secondary">
+        By submitting this form you acknowledge our{" "}
+        <Link
+          href="/privacy"
+          className="text-accent underline underline-offset-2 hover:text-accent/80"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
 
       <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={pending}>
         {pending ? "Submitting..." : "Book a Consultation"}
