@@ -1,16 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { getCvSignedUrl, toggleProcessed } from "./actions";
+import {
+  getCvSignedUrl,
+  toggleProcessed,
+  deleteApplication,
+  deleteEnquiry,
+  deleteContactMessage,
+} from "./actions";
 import { adminLogout } from "./login/actions";
 import type {
   CandidateApplication,
   EmployerEnquiry,
   ContactMessage,
+  ActiveCandidate,
 } from "./actions";
+import { ActiveCandidatesTab } from "./ActiveCandidatesTab";
 
-type Tab = "applications" | "enquiries" | "messages";
+type Tab = "applications" | "enquiries" | "messages" | "pool";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("en-GB", {
@@ -107,6 +116,33 @@ function ProcessedCheckbox({
   );
 }
 
+function DeleteButton({
+  onDelete,
+}: {
+  onDelete: () => Promise<void>;
+}) {
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (!window.confirm("Are you sure you want to delete this? This cannot be undone.")) return;
+    startTransition(async () => {
+      await onDelete();
+      router.refresh();
+    });
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={pending}
+      className="inline-flex items-center rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-500 transition-colors hover:border-red-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+    >
+      {pending ? "Deleting…" : "Delete"}
+    </button>
+  );
+}
+
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="rounded-xl border border-dashed border-border py-16 text-center">
@@ -139,11 +175,14 @@ function ApplicationsTab({ items }: { items: CandidateApplication[] }) {
             <p className="font-semibold text-text-light">{app.full_name}</p>
             <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
               <p className="text-xs text-text-secondary">{formatDate(app.created_at)}</p>
-              <ProcessedCheckbox
-                id={app.id}
-                table="candidate_applications"
-                initialProcessed={app.processed}
-              />
+              <div className="flex items-center gap-2">
+                <ProcessedCheckbox
+                  id={app.id}
+                  table="candidate_applications"
+                  initialProcessed={app.processed}
+                />
+                <DeleteButton onDelete={() => deleteApplication(app.id)} />
+              </div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -182,11 +221,14 @@ function EnquiriesTab({ items }: { items: EmployerEnquiry[] }) {
             <p className="font-semibold text-text-light">{enq.company_name}</p>
             <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
               <p className="text-xs text-text-secondary">{formatDate(enq.created_at)}</p>
-              <ProcessedCheckbox
-                id={enq.id}
-                table="employer_enquiries"
-                initialProcessed={enq.processed}
-              />
+              <div className="flex items-center gap-2">
+                <ProcessedCheckbox
+                  id={enq.id}
+                  table="employer_enquiries"
+                  initialProcessed={enq.processed}
+                />
+                <DeleteButton onDelete={() => deleteEnquiry(enq.id)} />
+              </div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -228,11 +270,14 @@ function MessagesTab({ items }: { items: ContactMessage[] }) {
             </div>
             <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
               <p className="text-xs text-text-secondary">{formatDate(msg.created_at)}</p>
-              <ProcessedCheckbox
-                id={msg.id}
-                table="contact_messages"
-                initialProcessed={msg.processed}
-              />
+              <div className="flex items-center gap-2">
+                <ProcessedCheckbox
+                  id={msg.id}
+                  table="contact_messages"
+                  initialProcessed={msg.processed}
+                />
+                <DeleteButton onDelete={() => deleteContactMessage(msg.id)} />
+              </div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -260,17 +305,20 @@ export function AdminDashboard({
   applications,
   enquiries,
   messages,
+  activeCandidates,
 }: {
   applications: CandidateApplication[];
   enquiries: EmployerEnquiry[];
   messages: ContactMessage[];
+  activeCandidates: ActiveCandidate[];
 }) {
-  const [tab, setTab] = useState<Tab>("applications");
+  const [tab, setTab] = useState<Tab>("pool");
 
-  const tabs: { id: Tab; label: string; count: number }[] = [
-    { id: "applications", label: "Applications", count: applications.length },
-    { id: "enquiries", label: "Enquiries", count: enquiries.length },
-    { id: "messages", label: "Messages", count: messages.length },
+  const tabs: { id: Tab; label: string; mobileLabel: string; count: number; newCount: number }[] = [
+    { id: "applications", label: "Applications", mobileLabel: "Apps", count: applications.length, newCount: applications.filter((a) => !a.processed).length },
+    { id: "enquiries",    label: "Enquiries",    mobileLabel: "Enqs", count: enquiries.length,    newCount: enquiries.filter((e) => !e.processed).length },
+    { id: "messages",     label: "Messages",     mobileLabel: "Msgs", count: messages.length,     newCount: messages.filter((m) => !m.processed).length },
+    { id: "pool",         label: "Active Candidates", mobileLabel: "Pool", count: activeCandidates.length, newCount: 0 },
   ];
 
   return (
@@ -310,7 +358,7 @@ export function AdminDashboard({
                 />
               )}
               <span className="relative z-10 flex items-center gap-1.5">
-                <span className="sm:hidden">{t.label === "Applications" ? "Apps" : t.label}</span>
+                <span className="sm:hidden">{t.mobileLabel}</span>
                 <span className="hidden sm:inline">{t.label}</span>
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
@@ -319,6 +367,13 @@ export function AdminDashboard({
                 >
                   {t.count}
                 </span>
+                {t.newCount > 0 && (
+                  <span className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${
+                    tab === t.id ? "bg-red-400 text-white" : "bg-red-500 text-white"
+                  }`}>
+                    {t.newCount}
+                  </span>
+                )}
               </span>
             </button>
           ))}
@@ -336,6 +391,7 @@ export function AdminDashboard({
             {tab === "applications" && <ApplicationsTab items={applications} />}
             {tab === "enquiries" && <EnquiriesTab items={enquiries} />}
             {tab === "messages" && <MessagesTab items={messages} />}
+            {tab === "pool" && <ActiveCandidatesTab initialCandidates={activeCandidates} />}
           </motion.div>
         </AnimatePresence>
       </main>

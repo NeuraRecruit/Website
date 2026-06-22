@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createSupabaseAdmin, createSupabaseClient } from "@/lib/supabase/server";
 import { sendCandidateNotification } from "@/lib/email";
 import { checkSpam } from "@/lib/spam";
+import { isRateLimited } from "@/lib/rate-limit";
+import { getTrustedIp } from "@/lib/request-ip";
 
 const applicationSchema = z.object({
   full_name: z.string().min(2, "Name is required"),
@@ -25,6 +27,11 @@ export async function submitApplication(
 ): Promise<ApplicationState> {
   if (checkSpam(formData)) return { success: true };
 
+  const ip = await getTrustedIp();
+  if (await isRateLimited(`apply:${ip}`, 5, 10 * 60 * 1000)) {
+    return { error: "Too many submissions. Please try again later." };
+  }
+
   const raw = {
     full_name: formData.get("full_name"),
     email: formData.get("email"),
@@ -42,10 +49,31 @@ export async function submitApplication(
   let cvStoragePath: string | null = null;
   let cvSignedUrl: string | null = null;
 
+  // Allowed CV file types (server-side enforcement; client `accept` is not trusted)
+  const MAX_CV_BYTES = 5 * 1024 * 1024; // 5 MB
+  const ALLOWED_EXTENSIONS = ["pdf", "doc", "docx"] as const;
+  const ALLOWED_MIME_TYPES = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
   try {
     if (cvFile && cvFile.size > 0) {
+      if (cvFile.size > MAX_CV_BYTES) {
+        return { fieldErrors: { cv: ["CV must be 5 MB or smaller."] } };
+      }
+
+      const ext = cvFile.name.split(".").pop()?.toLowerCase() ?? "";
+      if (!ALLOWED_EXTENSIONS.includes(ext as typeof ALLOWED_EXTENSIONS[number])) {
+        return { fieldErrors: { cv: ["CV must be a PDF, DOC, or DOCX file."] } };
+      }
+
+      if (!ALLOWED_MIME_TYPES.includes(cvFile.type)) {
+        return { fieldErrors: { cv: ["CV must be a PDF, DOC, or DOCX file."] } };
+      }
+
       const admin = createSupabaseAdmin();
-      const ext = cvFile.name.split(".").pop() || "pdf";
       const fileName = `${crypto.randomUUID()}.${ext}`;
       const buffer = Buffer.from(await cvFile.arrayBuffer());
 

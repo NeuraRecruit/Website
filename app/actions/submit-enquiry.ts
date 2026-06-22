@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createSupabaseClient } from "@/lib/supabase/server";
 import { sendEnquiryNotification } from "@/lib/email";
 import { checkSpam } from "@/lib/spam";
+import { isRateLimited } from "@/lib/rate-limit";
+import { getTrustedIp } from "@/lib/request-ip";
 
 const enquirySchema = z.object({
   company_name: z.string().min(2, "Company name is required"),
@@ -24,6 +26,11 @@ export async function submitEnquiry(
   formData: FormData
 ): Promise<EnquiryState> {
   if (checkSpam(formData)) return { success: true };
+
+  const ip = await getTrustedIp();
+  if (await isRateLimited(`enquiry:${ip}`, 5, 10 * 60 * 1000)) {
+    return { error: "Too many submissions. Please try again later." };
+  }
 
   const raw = {
     company_name: formData.get("company_name"),

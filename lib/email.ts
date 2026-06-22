@@ -5,6 +5,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "Neura Recruitment <hello@neurarecruitment.com>";
 const TO = "hello@neurarecruitment.com";
 
+// Escape user-provided values before interpolating into notification HTML.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function row(label: string, value: string) {
   return `<tr><td style="padding:6px 0;color:#6b7280;font-size:14px;width:140px;vertical-align:top">${label}</td><td style="padding:6px 0;font-size:14px;color:#111827">${value}</td></tr>`;
 }
@@ -31,15 +41,16 @@ export async function sendCandidateNotification(data: {
   cv_url: string | null;
 }) {
   const cvLine = data.cv_url
-    ? `<a href="${data.cv_url}" style="color:#2e6bff">Download CV</a>`
+    ? `<a href="${encodeURI(data.cv_url)}" style="color:#2e6bff">Download CV</a>`
     : "Not provided";
 
+  const email = escapeHtml(data.email);
   const body = `<table cellpadding="0" cellspacing="0" style="width:100%">
-${row("Name", data.full_name)}
-${row("Email", `<a href="mailto:${data.email}" style="color:#2e6bff">${data.email}</a>`)}
-${row("Phone", data.phone)}
-${row("Role", data.role)}
-${row("Location", data.location)}
+${row("Name", escapeHtml(data.full_name))}
+${row("Email", `<a href="mailto:${email}" style="color:#2e6bff">${email}</a>`)}
+${row("Phone", escapeHtml(data.phone))}
+${row("Role", escapeHtml(data.role))}
+${row("Location", escapeHtml(data.location))}
 ${row("CV", cvLine)}
 </table>`;
 
@@ -58,12 +69,13 @@ export async function sendEnquiryNotification(data: {
   phone: string;
   message: string;
 }) {
+  const email = escapeHtml(data.email);
   const body = `<table cellpadding="0" cellspacing="0" style="width:100%">
-${row("Company", data.company_name)}
-${row("Contact", data.contact_name)}
-${row("Email", `<a href="mailto:${data.email}" style="color:#2e6bff">${data.email}</a>`)}
-${row("Phone", data.phone)}
-${row("Message", `<span style="white-space:pre-wrap">${data.message}</span>`)}
+${row("Company", escapeHtml(data.company_name))}
+${row("Contact", escapeHtml(data.contact_name))}
+${row("Email", `<a href="mailto:${email}" style="color:#2e6bff">${email}</a>`)}
+${row("Phone", escapeHtml(data.phone))}
+${row("Message", `<span style="white-space:pre-wrap">${escapeHtml(data.message)}</span>`)}
 </table>`;
 
   await resend.emails.send({
@@ -82,13 +94,14 @@ export async function sendContactNotification(data: {
   message: string;
   request_callback: boolean;
 }) {
+  const email = escapeHtml(data.email);
   const body = `<table cellpadding="0" cellspacing="0" style="width:100%">
-${row("Name", data.full_name)}
-${row("Email", `<a href="mailto:${data.email}" style="color:#2e6bff">${data.email}</a>`)}
-${data.phone ? row("Phone", data.phone) : ""}
-${data.company ? row("Company", data.company) : ""}
+${row("Name", escapeHtml(data.full_name))}
+${row("Email", `<a href="mailto:${email}" style="color:#2e6bff">${email}</a>`)}
+${data.phone ? row("Phone", escapeHtml(data.phone)) : ""}
+${data.company ? row("Company", escapeHtml(data.company)) : ""}
 ${row("Callback?", data.request_callback ? "Yes — please call" : "No")}
-${row("Message", `<span style="white-space:pre-wrap">${data.message}</span>`)}
+${row("Message", `<span style="white-space:pre-wrap">${escapeHtml(data.message)}</span>`)}
 </table>`;
 
   await resend.emails.send({

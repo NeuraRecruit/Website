@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createSupabaseClient } from "@/lib/supabase/server";
 import { sendContactNotification } from "@/lib/email";
 import { checkSpam } from "@/lib/spam";
+import { isRateLimited } from "@/lib/rate-limit";
+import { getTrustedIp } from "@/lib/request-ip";
 
 const contactSchema = z
   .object({
@@ -36,6 +38,11 @@ export async function submitContact(
   formData: FormData
 ): Promise<ContactState> {
   if (checkSpam(formData)) return { success: true };
+
+  const ip = await getTrustedIp();
+  if (await isRateLimited(`contact:${ip}`, 5, 10 * 60 * 1000)) {
+    return { error: "Too many submissions. Please try again later." };
+  }
 
   const raw = {
     full_name: formData.get("full_name"),
