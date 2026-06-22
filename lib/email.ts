@@ -32,6 +32,21 @@ function layout(title: string, body: string) {
 </td></tr></table></body></html>`;
 }
 
+export async function sendAdminLoginCode(code: string) {
+  const body = `<p style="margin:0 0 16px;font-size:14px;color:#374151">
+Use this code to finish signing in to the Neura admin panel:</p>
+<p style="margin:0 0 16px;font-size:32px;font-weight:700;letter-spacing:0.2em;color:#111827">${escapeHtml(code)}</p>
+<p style="margin:0;font-size:13px;color:#6b7280">
+This code expires in 10 minutes. If you didn't try to sign in, you can safely ignore this email.</p>`;
+
+  await resend.emails.send({
+    from: FROM,
+    to: TO,
+    subject: "Your Neura admin login code",
+    html: layout("Admin login code", body),
+  });
+}
+
 export async function sendCandidateNotification(data: {
   full_name: string;
   email: string;
