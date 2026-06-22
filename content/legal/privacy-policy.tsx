@@ -20,7 +20,6 @@ export function PrivacyPolicyContent() {
         <LegalList
           items={[
             <>Company: Neura Recruitment Limited (registered in England &amp; Wales, company number 17274084)</>,
-            <>Registered office: 20 Henry Cooper Way, London, United Kingdom, SE9 4JF</>,
             <>Contact for privacy matters: <LegalLink href="mailto:hello@neurarecruitment.com">hello@neurarecruitment.com</LegalLink></>,
             <>ICO registration number: [insert once registered with the Information Commissioner&apos;s Office]</>,
           ]}
@@ -142,8 +141,7 @@ export function PrivacyPolicyContent() {
       <LegalSection number={11} title="Contact us">
         <p>
           For any questions about this policy or how we handle your data, contact{" "}
-          <LegalLink href="mailto:hello@neurarecruitment.com">hello@neurarecruitment.com</LegalLink>{" "}
-          or write to us at 20 Henry Cooper Way, London, SE9 4JF.
+          <LegalLink href="mailto:hello@neurarecruitment.com">hello@neurarecruitment.com</LegalLink>.
         </p>
       </LegalSection>
     </LegalDocument>
