@@ -706,10 +706,10 @@ function CandidateRow({
   const chips: { label: string; color: ChipColor }[] = [
     { label: candidate.employment_type === "contractor" ? "Contractor" : "Permanent", color: candidate.employment_type === "contractor" ? "orange" : "blue" },
     candidate.job_title    ? { label: candidate.job_title,    color: "blue"   } : null,
+    currentSalaryChip      ? { label: `on ${currentSalaryChip}`,    color: "green"  } : null,
     candidate.desired_role ? { label: candidate.desired_role, color: "purple" } : null,
+    desiredSalaryChip      ? { label: `wants ${desiredSalaryChip}+`, color: "amber"  } : null,
     candidate.location     ? { label: candidate.location,     color: "teal"   } : null,
-    currentSalaryChip      ? { label: `on ${currentSalaryChip}`,  color: "green"  } : null,
-    desiredSalaryChip      ? { label: `wants ${desiredSalaryChip}`, color: "amber" } : null,
     candidate.notice_period ? { label: `${candidate.notice_period} notice`, color: "slate" } : null,
     candidate.phone        ? { label: candidate.phone,        color: "grey"   } : null,
   ].filter(Boolean) as { label: string; color: ChipColor }[];
