@@ -354,12 +354,10 @@ function EmploymentTypeSelector({
 
   const toggle = (e: React.MouseEvent, opt: string) => {
     e.stopPropagation();
-    setSelected((prev) => {
-      const next = prev.includes(opt) ? prev.filter((s) => s !== opt) : [...prev, opt];
-      const final = next.length > 0 ? next : [opt]; // always keep at least one
-      onChange(final.join(","));
-      return final;
-    });
+    const next = selected.includes(opt) ? selected.filter((s) => s !== opt) : [...selected, opt];
+    const final = next.length > 0 ? next : [opt];
+    setSelected(final);
+    onChange(final.join(","));
   };
 
   return (
