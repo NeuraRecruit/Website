@@ -131,7 +131,7 @@ export async function deleteContactMessage(id: string): Promise<void> {
 
 export type CandidateStatus = "available" | "in_work" | "unavailable";
 export type CandidatePriority = "high" | "medium" | "low";
-export type EmploymentType = "permanent" | "contractor";
+export type EmploymentType = string;
 
 export type ActiveCandidate = {
   id: string;

@@ -401,7 +401,7 @@ const EMPTY_FORM = {
   notes: "",
   status: "available" as CandidateStatus,
   priority: "medium" as CandidatePriority,
-  employment_type: "permanent" as EmploymentType,
+  employment_type: "permanent",
 };
 
 type FormValues = typeof EMPTY_FORM;
@@ -704,36 +704,11 @@ const STATUS_LABELS: Record<CandidateStatus, string> = {
   unavailable: "Unavailable",
 };
 
-function StatusBadge({
-  id,
-  status,
-}: {
-  id: string;
-  status: CandidateStatus;
-}) {
-  const [current, setCurrent] = useState<CandidateStatus>(status);
-  const [pending, startTransition] = useTransition();
-
-  const cycle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const idx = STATUS_CYCLE.indexOf(current);
-    const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
-    setCurrent(next);
-    startTransition(async () => {
-      await toggleCandidateStatus(id, next);
-    });
-  };
-
+function StatusBadge({ status }: { status: CandidateStatus }) {
   return (
-    <button
-      type="button"
-      onClick={cycle}
-      disabled={pending}
-      title="Click to change status"
-      className={`inline-flex flex-shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${STATUS_STYLES[current]}`}
-    >
-      {STATUS_LABELS[current]}
-    </button>
+    <span className={`inline-flex flex-shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[status]}`}>
+      {STATUS_LABELS[status]}
+    </span>
   );
 }
 
@@ -795,7 +770,7 @@ function CandidateRow({
       >
         <div className="min-w-0 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <p className="font-semibold text-text-light">{name}</p>
-          <StatusBadge id={candidate.id} status={candidate.status} />
+          <StatusBadge status={candidate.status} />
           <PriorityBadge priority={candidate.priority} />
           {chips.map((c) => (
             <Chip key={c.label} label={c.label} color={c.color} />
