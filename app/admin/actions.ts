@@ -197,9 +197,8 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
   const priority: CandidatePriority =
     rawPriority === "high" || rawPriority === "low" ? rawPriority : "medium";
 
-  const rawEmpType = (formData.get("employment_type") as string | null)?.trim();
   const employment_type: EmploymentType =
-    rawEmpType === "contractor" ? "contractor" : "permanent";
+    (formData.get("employment_type") as string | null)?.trim() || "permanent";
 
   const { error } = await admin.from("active_candidates").insert({
     full_name: optStr(formData, "full_name"),
@@ -250,9 +249,8 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
   const priority: CandidatePriority =
     rawPriority === "high" || rawPriority === "low" ? rawPriority : "medium";
 
-  const rawEmpType = (formData.get("employment_type") as string | null)?.trim();
   const employment_type: EmploymentType =
-    rawEmpType === "contractor" ? "contractor" : "permanent";
+    (formData.get("employment_type") as string | null)?.trim() || "permanent";
 
   const updates: Record<string, string | null> = {
     full_name: optStr(formData, "full_name"),
