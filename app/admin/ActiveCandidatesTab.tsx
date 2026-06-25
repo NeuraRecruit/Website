@@ -803,6 +803,18 @@ function CandidateRow({
             className="overflow-hidden"
           >
             <div className="border-t border-border px-4 pb-4 pt-4 space-y-4">
+              {/* Status / priority / employment type */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <Field label="Status" value={STATUS_LABELS[candidate.status]} />
+                <Field label="Priority" value={PRIORITY_LABELS[candidate.priority]} />
+                <Field label="Employment type" value={
+                  (candidate.employment_type ?? "permanent")
+                    .split(",")
+                    .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
+                    .join(" + ")
+                } />
+              </div>
+
               {/* Contact */}
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                 <div className="col-span-2 lg:col-span-3">
@@ -824,9 +836,9 @@ function CandidateRow({
               {/* Role & comp */}
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Field label="Current job title" value={candidate.job_title} />
-                <Field label="Current salary" value={candidate.current_salary} />
+                <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
                 <Field label="Desired role" value={candidate.desired_role} />
-                <Field label="Desired salary" value={candidate.salary_expectation} />
+                <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
                 <Field label="Day rate" value={candidate.day_rate} />
                 <Field label="Notice period" value={candidate.notice_period} />
                 <Field label="Availability" value={candidate.availability} />
