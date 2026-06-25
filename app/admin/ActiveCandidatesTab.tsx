@@ -123,81 +123,110 @@ function NoticeSelector({
   );
 }
 
-// ─── Salary options ───────────────────────────────────────────────────────
+// ─── Salary helpers ───────────────────────────────────────────────────────
 
-const SALARY_OPTIONS = [
-  "30k", "40k", "50k", "60k", "70k", "80k", "90k",
-  "100k", "110k", "120k", "130k", "140k", "150k",
-] as const;
+const SALARY_QUICK_PICKS = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150];
 
-// Parse comma-separated salary string → sorted array of selected values
-function parseSalary(raw: string): string[] {
+// Parse stored salary string (e.g. "57k" or "57k,75k") → number(s)
+function parseSalaryNums(raw: string): number[] {
   return raw
     .split(",")
-    .map((s) => s.trim())
-    .filter((s) => SALARY_OPTIONS.includes(s as typeof SALARY_OPTIONS[number]));
+    .map((s) => parseInt(s.trim().replace("k", "")))
+    .filter((n) => !isNaN(n));
 }
 
-// Build display string: "£50k" or "£30k–£60k"
+// Build display string from raw stored value (e.g. "57k" → "£57k", "57k,75k" → "£57k–£75k")
 function salaryDisplay(raw: string): string {
-  const vals = parseSalary(raw);
-  if (!vals.length) return "";
-  if (vals.length === 1) return `£${vals[0]}`;
-  const sorted = [...vals].sort(
-    (a, b) => SALARY_OPTIONS.indexOf(a as typeof SALARY_OPTIONS[number]) - SALARY_OPTIONS.indexOf(b as typeof SALARY_OPTIONS[number])
-  );
-  return `£${sorted[0]}–£${sorted[sorted.length - 1]}`;
+  const nums = parseSalaryNums(raw).sort((a, b) => a - b);
+  if (!nums.length) return "";
+  if (nums.length === 1) return `£${nums[0]}k`;
+  return `£${nums[0]}k–£${nums[nums.length - 1]}k`;
 }
 
-function SalarySelector({
-  selected,
+// Single-value salary picker with ±1k fine-tune
+function SalaryStepInput({
+  label,
+  value,
   onChange,
-  label = "Salary expectation",
 }: {
-  selected: string[];
-  onChange: (vals: string[]) => void;
-  label?: string;
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
 }) {
-  const toggle = (opt: string) => {
-    onChange(
-      selected.includes(opt) ? selected.filter((s) => s !== opt) : [...selected, opt]
-    );
+  const adj = (delta: number) => {
+    if (value === null) return;
+    onChange(Math.max(20, Math.min(300, value + delta)));
   };
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <label className="block text-xs font-medium text-text-secondary">{label}</label>
-      <div className="flex flex-wrap gap-2">
-        {SALARY_OPTIONS.map((opt) => {
-          const active = selected.includes(opt);
-          return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => toggle(opt)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                active
-                  ? "border-accent bg-accent text-white"
-                  : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
-              }`}
-            >
-              £{opt}
-            </button>
-          );
-        })}
-        {selected.length > 0 && (
+      <div className="flex flex-wrap gap-1.5">
+        {SALARY_QUICK_PICKS.map((n) => (
           <button
+            key={n}
             type="button"
-            onClick={() => onChange([])}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-text-secondary/60 hover:text-text-secondary"
+            onClick={() => onChange(value === n ? null : n)}
+            className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+              value === n
+                ? "border-accent bg-accent text-white"
+                : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
+            }`}
           >
+            £{n}k
+          </button>
+        ))}
+      </div>
+      {value !== null && (
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => adj(-1)}
+            className="rounded border border-border bg-white px-2.5 py-1 text-sm font-semibold text-text-secondary hover:bg-bg-secondary">
+            −
+          </button>
+          <span className="min-w-[4.5rem] text-center text-sm font-bold text-text-light">£{value}k</span>
+          <button type="button" onClick={() => adj(+1)}
+            className="rounded border border-border bg-white px-2.5 py-1 text-sm font-semibold text-text-secondary hover:bg-bg-secondary">
+            +
+          </button>
+          <button type="button" onClick={() => onChange(null)}
+            className="ml-1 text-xs text-text-secondary/60 hover:text-text-secondary">
             Clear
           </button>
-        )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Range picker for desired salary (from / to)
+function SalaryRangePicker({
+  min,
+  max,
+  onChangeMin,
+  onChangeMax,
+}: {
+  min: number | null;
+  max: number | null;
+  onChangeMin: (v: number | null) => void;
+  onChangeMax: (v: number | null) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-medium text-text-secondary">Desired salary</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SalaryStepInput label="From" value={min} onChange={onChangeMin} />
+        <SalaryStepInput label="To" value={max} onChange={onChangeMax} />
       </div>
-      {selected.length > 0 && (
+      {(min !== null || max !== null) && (
         <p className="text-xs text-text-secondary">
-          Selected: <span className="font-medium text-text-light">{salaryDisplay(selected.join(","))}</span>
+          Range:{" "}
+          <span className="font-medium text-text-light">
+            {min !== null && max !== null && min !== max
+              ? `£${min}k–£${max}k+`
+              : min !== null
+              ? `£${min}k+`
+              : `up to £${max}k`}
+          </span>
         </p>
       )}
     </div>
@@ -303,29 +332,44 @@ function PrioritySelector({
   );
 }
 
-// ─── Employment type selector ────────────────────────────────────────────
+// ─── Employment type selector (multi-select) ─────────────────────────────
+
+const EMP_TYPE_STYLES: Record<string, string> = {
+  permanent:  "border-blue-400 bg-blue-100 text-blue-700",
+  contractor: "border-orange-400 bg-orange-100 text-orange-700",
+};
 
 function EmploymentTypeSelector({
   value,
   onChange,
 }: {
-  value: EmploymentType;
-  onChange: (v: EmploymentType) => void;
+  value: string;   // comma-separated e.g. "permanent" | "contractor" | "permanent,contractor"
+  onChange: (v: string) => void;
 }) {
+  const selected = value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [];
+
+  const toggle = (opt: string) => {
+    const next = selected.includes(opt)
+      ? selected.filter((s) => s !== opt)
+      : [...selected, opt];
+    // Always keep at least one selected
+    onChange(next.length > 0 ? next.join(",") : opt);
+  };
+
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-text-secondary">Employment type</label>
+      <label className="block text-xs font-medium text-text-secondary">
+        Employment type <span className="font-normal text-text-secondary/60">(select all that apply)</span>
+      </label>
       <div className="flex flex-wrap gap-2">
-        {(["permanent", "contractor"] as EmploymentType[]).map((opt) => (
+        {(["permanent", "contractor"] as const).map((opt) => (
           <button
             key={opt}
             type="button"
-            onClick={() => onChange(opt)}
-            className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors capitalize ${
-              value === opt
-                ? opt === "permanent"
-                  ? "border-blue-400 bg-blue-100 text-blue-700"
-                  : "border-orange-400 bg-orange-100 text-orange-700"
+            onClick={() => toggle(opt)}
+            className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors ${
+              selected.includes(opt)
+                ? EMP_TYPE_STYLES[opt]
                 : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
             }`}
           >
@@ -456,12 +500,19 @@ function CandidateForm({
 }) {
   const base = initial ?? EMPTY_FORM;
   const [values, setValues] = useState<FormValues>(base);
-  const [currentSalarySelected, setCurrentSalarySelected] = useState<string[]>(() =>
-    parseSalary(base.current_salary)
-  );
-  const [salarySelected, setSalarySelected] = useState<string[]>(() =>
-    parseSalary(base.salary_expectation)
-  );
+
+  const [currentSalaryNum, setCurrentSalaryNum] = useState<number | null>(() => {
+    const nums = parseSalaryNums(base.current_salary);
+    return nums[0] ?? null;
+  });
+  const [desiredMin, setDesiredMin] = useState<number | null>(() => {
+    const nums = parseSalaryNums(base.salary_expectation).sort((a, b) => a - b);
+    return nums[0] ?? null;
+  });
+  const [desiredMax, setDesiredMax] = useState<number | null>(() => {
+    const nums = parseSalaryNums(base.salary_expectation).sort((a, b) => a - b);
+    return nums.length > 1 ? nums[nums.length - 1] : nums[0] ?? null;
+  });
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -472,8 +523,11 @@ function CandidateForm({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     // Inject computed fields not captured by native form inputs
-    formData.set("current_salary", currentSalarySelected.join(","));
-    formData.set("salary_expectation", salarySelected.join(","));
+    formData.set("current_salary", currentSalaryNum !== null ? `${currentSalaryNum}k` : "");
+    const desiredParts = [desiredMin, desiredMax]
+      .filter((n): n is number => n !== null)
+      .map((n) => `${n}k`);
+    formData.set("salary_expectation", [...new Set(desiredParts)].join(","));
     formData.set("status", values.status);
     formData.set("priority", values.priority);
     formData.set("employment_type", values.employment_type);
@@ -521,7 +575,7 @@ function CandidateForm({
 
       {/* Employment type */}
       <EmploymentTypeSelector
-        value={values.employment_type as EmploymentType}
+        value={values.employment_type}
         onChange={(v) => setValues((prev) => ({ ...prev, employment_type: v }))}
       />
 
@@ -550,8 +604,8 @@ function CandidateForm({
       <div>
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Compensation</p>
         <div className="space-y-3">
-          <SalarySelector label="Current salary" selected={currentSalarySelected} onChange={setCurrentSalarySelected} />
-          <SalarySelector label="Desired salary" selected={salarySelected} onChange={setSalarySelected} />
+          <SalaryStepInput label="Current salary" value={currentSalaryNum} onChange={setCurrentSalaryNum} />
+          <SalaryRangePicker min={desiredMin} max={desiredMax} onChangeMin={setDesiredMin} onChangeMax={setDesiredMax} />
           <LabelledInput label="Day rate" name="day_rate" value={values.day_rate} onChange={set("day_rate")} placeholder="£350/day" />
         </div>
       </div>
@@ -703,8 +757,15 @@ function CandidateRow({
     ? salaryDisplay(candidate.salary_expectation)
     : candidate.day_rate || null;
 
+  const empTypes = (candidate.employment_type ?? "permanent").split(",").map((s) => s.trim());
+  const empChips: { label: string; color: ChipColor }[] = empTypes.includes("permanent") && empTypes.includes("contractor")
+    ? [{ label: "Perm / Contract", color: "slate" }]
+    : empTypes.includes("contractor")
+    ? [{ label: "Contractor", color: "orange" }]
+    : [{ label: "Permanent", color: "blue" }];
+
   const chips: { label: string; color: ChipColor }[] = [
-    { label: candidate.employment_type === "contractor" ? "Contractor" : "Permanent", color: candidate.employment_type === "contractor" ? "orange" : "blue" },
+    ...empChips,
     candidate.job_title    ? { label: candidate.job_title,    color: "blue"   } : null,
     currentSalaryChip      ? { label: `on ${currentSalaryChip}`,    color: "green"  } : null,
     candidate.desired_role ? { label: candidate.desired_role, color: "purple" } : null,
@@ -876,7 +937,7 @@ export function ActiveCandidatesTab({
 
   const filtered = candidates
     .filter((c) => {
-      if (empFilter !== "all" && c.employment_type !== empFilter) return false;
+      if (empFilter !== "all" && !(c.employment_type ?? "permanent").split(",").includes(empFilter)) return false;
       if (!search.trim()) return true;
       const q = search.toLowerCase();
       return [c.full_name, c.desired_role, c.job_title, c.location, c.qualifications]
