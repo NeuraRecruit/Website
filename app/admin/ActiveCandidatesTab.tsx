@@ -343,17 +343,23 @@ function EmploymentTypeSelector({
   value,
   onChange,
 }: {
-  value: string;   // comma-separated e.g. "permanent" | "contractor" | "permanent,contractor"
+  value: string;
   onChange: (v: string) => void;
 }) {
-  const selected = value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  const parse = (v: string) => v ? v.split(",").map((s) => s.trim()).filter(Boolean) : ["permanent"];
+  const [selected, setSelected] = useState<string[]>(() => parse(value));
 
-  const toggle = (opt: string) => {
-    const next = selected.includes(opt)
-      ? selected.filter((s) => s !== opt)
-      : [...selected, opt];
-    // Always keep at least one selected
-    onChange(next.length > 0 ? next.join(",") : opt);
+  // Keep in sync when the parent resets the form
+  useEffect(() => { setSelected(parse(value)); }, [value]);
+
+  const toggle = (e: React.MouseEvent, opt: string) => {
+    e.stopPropagation();
+    setSelected((prev) => {
+      const next = prev.includes(opt) ? prev.filter((s) => s !== opt) : [...prev, opt];
+      const final = next.length > 0 ? next : [opt]; // always keep at least one
+      onChange(final.join(","));
+      return final;
+    });
   };
 
   return (
@@ -366,7 +372,7 @@ function EmploymentTypeSelector({
           <button
             key={opt}
             type="button"
-            onClick={() => toggle(opt)}
+            onClick={(e) => toggle(e, opt)}
             className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors ${
               selected.includes(opt)
                 ? EMP_TYPE_STYLES[opt]
