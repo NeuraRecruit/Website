@@ -10,7 +10,7 @@ import {
   toggleCandidateStatus,
   getCvSignedUrl,
 } from "./actions";
-import type { ActiveCandidate, CandidateStatus } from "./actions";
+import type { ActiveCandidate, CandidateStatus, CandidatePriority } from "./actions";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
 
@@ -68,6 +68,12 @@ const STATUS_WEIGHT: Record<CandidateStatus, number> = {
   available: 0,
   in_work: 1,
   unavailable: 2,
+};
+
+const PRIORITY_WEIGHT: Record<string, number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
 };
 
 function NoticeSelector({
@@ -237,6 +243,65 @@ function StatusSelector({
   );
 }
 
+// ─── Priority badge + selector ───────────────────────────────────────────
+
+const PRIORITY_STYLES: Record<CandidatePriority, string> = {
+  high:   "bg-red-100 text-red-700",
+  medium: "bg-bg-secondary text-text-secondary",
+  low:    "bg-gray-100 text-gray-500",
+};
+
+const PRIORITY_LABELS: Record<CandidatePriority, string> = {
+  high:   "High priority",
+  medium: "",
+  low:    "Low priority",
+};
+
+function PriorityBadge({ priority }: { priority: CandidatePriority }) {
+  if (priority === "medium") return null;
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_STYLES[priority]}`}>
+      {PRIORITY_LABELS[priority]}
+    </span>
+  );
+}
+
+const PRIORITY_FORM_OPTIONS: { value: CandidatePriority; label: string; active: string }[] = [
+  { value: "high",   label: "High",   active: "border-red-400 bg-red-100 text-red-700" },
+  { value: "medium", label: "Medium", active: "border-accent bg-accent text-white" },
+  { value: "low",    label: "Low",    active: "border-gray-400 bg-gray-100 text-gray-700" },
+];
+
+function PrioritySelector({
+  value,
+  onChange,
+}: {
+  value: CandidatePriority;
+  onChange: (v: CandidatePriority) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium text-text-secondary">Priority</label>
+      <div className="flex flex-wrap gap-2">
+        {PRIORITY_FORM_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors ${
+              value === opt.value
+                ? opt.active
+                : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Add / Edit form ──────────────────────────────────────────────────────
 
 const EMPTY_FORM = {
@@ -255,6 +320,7 @@ const EMPTY_FORM = {
   availability: "",
   notes: "",
   status: "available" as CandidateStatus,
+  priority: "medium" as CandidatePriority,
 };
 
 type FormValues = typeof EMPTY_FORM;
@@ -276,6 +342,7 @@ function fieldFromCandidate(c: ActiveCandidate): FormValues {
     availability: c.availability ?? "",
     notes: c.notes ?? "",
     status: c.status,
+    priority: c.priority,
   };
 }
 
@@ -365,6 +432,7 @@ function CandidateForm({
     // Inject computed fields not captured by native form inputs
     formData.set("salary_expectation", salarySelected.join(","));
     formData.set("status", values.status);
+    formData.set("priority", values.priority);
     setError(null);
     startTransition(async () => {
       try {
@@ -399,6 +467,12 @@ function CandidateForm({
       <StatusSelector
         value={values.status as CandidateStatus}
         onChange={(v) => setValues((prev) => ({ ...prev, status: v }))}
+      />
+
+      {/* Priority */}
+      <PrioritySelector
+        value={values.priority as CandidatePriority}
+        onChange={(v) => setValues((prev) => ({ ...prev, priority: v }))}
       />
 
       {/* Contact */}
@@ -490,9 +564,20 @@ function CandidateForm({
 
 // ─── Individual candidate row ─────────────────────────────────────────────
 
-function Chip({ label }: { label: string }) {
+type ChipColor = "grey" | "blue" | "purple" | "teal" | "amber" | "slate";
+
+const CHIP_COLORS: Record<ChipColor, string> = {
+  grey:   "bg-bg-secondary text-text-secondary",
+  blue:   "bg-blue-50 text-blue-700",
+  purple: "bg-purple-50 text-purple-700",
+  teal:   "bg-teal-50 text-teal-700",
+  amber:  "bg-amber-50 text-amber-700",
+  slate:  "bg-slate-100 text-slate-600",
+};
+
+function Chip({ label, color = "grey" }: { label: string; color?: ChipColor }) {
   return (
-    <span className="inline-flex rounded-md bg-bg-secondary px-2 py-0.5 text-xs text-text-secondary">
+    <span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${CHIP_COLORS[color]}`}>
       {label}
     </span>
   );
@@ -562,12 +647,14 @@ function CandidateRow({
     ? salaryDisplay(candidate.salary_expectation)
     : candidate.day_rate || null;
 
-  const chips = [
-    candidate.desired_role || candidate.job_title,
-    candidate.location,
-    salaryChip,
-    candidate.notice_period ? `${candidate.notice_period} notice` : null,
-  ].filter(Boolean) as string[];
+  const chips: { label: string; color: ChipColor }[] = [
+    candidate.job_title   ? { label: candidate.job_title,   color: "blue"   } : null,
+    candidate.desired_role ? { label: candidate.desired_role, color: "purple" } : null,
+    candidate.location    ? { label: candidate.location,    color: "teal"   } : null,
+    salaryChip            ? { label: salaryChip,            color: "amber"  } : null,
+    candidate.notice_period ? { label: `${candidate.notice_period} notice`, color: "slate" } : null,
+    candidate.phone       ? { label: candidate.phone,       color: "grey"   } : null,
+  ].filter(Boolean) as { label: string; color: ChipColor }[];
 
   const handleDelete = () => {
     if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
@@ -590,8 +677,9 @@ function CandidateRow({
         <div className="min-w-0 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <p className="font-semibold text-text-light">{name}</p>
           <StatusBadge id={candidate.id} status={candidate.status} />
+          <PriorityBadge priority={candidate.priority} />
           {chips.map((c) => (
-            <Chip key={c} label={c} />
+            <Chip key={c.label} label={c.label} color={c.color} />
           ))}
         </div>
         <svg
@@ -736,6 +824,8 @@ export function ActiveCandidatesTab({
     .sort((a, b) => {
       const statusDiff = STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status];
       if (statusDiff !== 0) return statusDiff;
+      const priorityDiff = (PRIORITY_WEIGHT[a.priority] ?? 1) - (PRIORITY_WEIGHT[b.priority] ?? 1);
+      if (priorityDiff !== 0) return priorityDiff;
       const aw = a.notice_period ? (NOTICE_WEIGHT[a.notice_period] ?? 99) : 99;
       const bw = b.notice_period ? (NOTICE_WEIGHT[b.notice_period] ?? 99) : 99;
       return aw - bw;

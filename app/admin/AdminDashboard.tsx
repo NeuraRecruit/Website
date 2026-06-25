@@ -16,10 +16,12 @@ import type {
   EmployerEnquiry,
   ContactMessage,
   ActiveCandidate,
+  Company,
 } from "./actions";
 import { ActiveCandidatesTab } from "./ActiveCandidatesTab";
+import CompaniesTab from "./CompaniesTab";
 
-type Tab = "applications" | "enquiries" | "messages" | "pool";
+type Tab = "applications" | "enquiries" | "messages" | "pool" | "companies";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("en-GB", {
@@ -306,11 +308,13 @@ export function AdminDashboard({
   enquiries,
   messages,
   activeCandidates,
+  companies,
 }: {
   applications: CandidateApplication[];
   enquiries: EmployerEnquiry[];
   messages: ContactMessage[];
   activeCandidates: ActiveCandidate[];
+  companies: Company[];
 }) {
   const [tab, setTab] = useState<Tab>("pool");
 
@@ -319,6 +323,7 @@ export function AdminDashboard({
     { id: "enquiries",    label: "Enquiries",    mobileLabel: "Enqs", count: enquiries.length,    newCount: enquiries.filter((e) => !e.processed).length },
     { id: "messages",     label: "Messages",     mobileLabel: "Msgs", count: messages.length,     newCount: messages.filter((m) => !m.processed).length },
     { id: "pool",         label: "Active Candidates", mobileLabel: "Pool", count: activeCandidates.length, newCount: 0 },
+    { id: "companies",    label: "Companies",    mobileLabel: "Cos",  count: companies.length,    newCount: 0 },
   ];
 
   return (
@@ -392,6 +397,7 @@ export function AdminDashboard({
             {tab === "enquiries" && <EnquiriesTab items={enquiries} />}
             {tab === "messages" && <MessagesTab items={messages} />}
             {tab === "pool" && <ActiveCandidatesTab initialCandidates={activeCandidates} />}
+            {tab === "companies" && <CompaniesTab initialCompanies={companies} />}
           </motion.div>
         </AnimatePresence>
       </main>

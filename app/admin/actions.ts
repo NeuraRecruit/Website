@@ -130,6 +130,7 @@ export async function deleteContactMessage(id: string): Promise<void> {
 // ─── Active candidates ─────────────────────────────────────────────────────
 
 export type CandidateStatus = "available" | "in_work" | "unavailable";
+export type CandidatePriority = "high" | "medium" | "low";
 
 export type ActiveCandidate = {
   id: string;
@@ -149,6 +150,7 @@ export type ActiveCandidate = {
   cv_storage_path: string | null;
   notes: string | null;
   status: CandidateStatus;
+  priority: CandidatePriority;
   created_at: string;
   updated_at: string;
 };
@@ -188,6 +190,10 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
   const status: CandidateStatus =
     rawStatus === "in_work" || rawStatus === "unavailable" ? rawStatus : "available";
 
+  const rawPriority = (formData.get("priority") as string | null)?.trim();
+  const priority: CandidatePriority =
+    rawPriority === "high" || rawPriority === "low" ? rawPriority : "medium";
+
   const { error } = await admin.from("active_candidates").insert({
     full_name: optStr(formData, "full_name"),
     email: optStr(formData, "email"),
@@ -205,6 +211,7 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
     notes: optStr(formData, "notes"),
     cv_storage_path: cvStoragePath,
     status,
+    priority,
   });
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
@@ -230,6 +237,10 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
   const status: CandidateStatus =
     rawStatus === "in_work" || rawStatus === "unavailable" ? rawStatus : "available";
 
+  const rawPriority = (formData.get("priority") as string | null)?.trim();
+  const priority: CandidatePriority =
+    rawPriority === "high" || rawPriority === "low" ? rawPriority : "medium";
+
   const updates: Record<string, string | null> = {
     full_name: optStr(formData, "full_name"),
     email: optStr(formData, "email"),
@@ -246,6 +257,7 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
     availability: optStr(formData, "availability"),
     notes: optStr(formData, "notes"),
     status,
+    priority,
     updated_at: new Date().toISOString(),
   };
   if (cvStoragePath !== undefined) updates.cv_storage_path = cvStoragePath;
@@ -282,6 +294,78 @@ export async function deleteActiveCandidate(id: string): Promise<void> {
   }
 
   const { error } = await admin.from("active_candidates").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin");
+}
+
+// ─── Companies ─────────────────────────────────────────────────────────────
+
+export type Company = {
+  id: string;
+  company_name: string;
+  industry: string | null;
+  contact_name: string | null;
+  contact_title: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  location: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function getCompanies(): Promise<Company[]> {
+  const admin = createSupabaseAdmin();
+  const { data, error } = await admin
+    .from("companies")
+    .select("*")
+    .order("company_name", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function createCompany(formData: FormData): Promise<void> {
+  const admin = createSupabaseAdmin();
+  const { error } = await admin.from("companies").insert({
+    company_name: (formData.get("company_name") as string)?.trim() || "Unnamed company",
+    industry: optStr(formData, "industry"),
+    contact_name: optStr(formData, "contact_name"),
+    contact_title: optStr(formData, "contact_title"),
+    email: optStr(formData, "email"),
+    phone: optStr(formData, "phone"),
+    website: optStr(formData, "website"),
+    location: optStr(formData, "location"),
+    notes: optStr(formData, "notes"),
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin");
+}
+
+export async function updateCompany(id: string, formData: FormData): Promise<void> {
+  const admin = createSupabaseAdmin();
+  const { error } = await admin
+    .from("companies")
+    .update({
+      company_name: (formData.get("company_name") as string)?.trim() || "Unnamed company",
+      industry: optStr(formData, "industry"),
+      contact_name: optStr(formData, "contact_name"),
+      contact_title: optStr(formData, "contact_title"),
+      email: optStr(formData, "email"),
+      phone: optStr(formData, "phone"),
+      website: optStr(formData, "website"),
+      location: optStr(formData, "location"),
+      notes: optStr(formData, "notes"),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin");
+}
+
+export async function deleteCompany(id: string): Promise<void> {
+  const admin = createSupabaseAdmin();
+  const { error } = await admin.from("companies").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
 }

@@ -1,15 +1,16 @@
-import { getApplications, getEnquiries, getContactMessages, getActiveCandidates } from "./actions";
+import { getApplications, getEnquiries, getContactMessages, getActiveCandidates, getCompanies } from "./actions";
 import { AdminDashboard } from "./AdminDashboard";
 
 export const metadata = { title: "Admin — Neura Recruitment" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [applications, enquiries, messages, activeCandidates] = await Promise.all([
+  const [applications, enquiries, messages, activeCandidates, companies] = await Promise.all([
     getApplications(),
     getEnquiries(),
     getContactMessages(),
     getActiveCandidates(),
+    getCompanies(),
   ]);
 
   return (
@@ -18,6 +19,7 @@ export default async function AdminPage() {
       enquiries={enquiries}
       messages={messages}
       activeCandidates={activeCandidates}
+      companies={companies}
     />
   );
 }
