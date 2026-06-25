@@ -1005,10 +1005,10 @@ export function ActiveCandidatesTab({
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 rounded-lg border border-border bg-white px-3 py-2">
           <span className="text-xs font-medium text-text-secondary mr-1 self-center">Legend:</span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700">Current role</span></span>
-          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700">Desired role</span></span>
-          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-teal-50 px-2 py-0.5 text-xs text-teal-700">Location</span></span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">Current salary</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700">Desired role</span></span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Desired salary</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-teal-50 px-2 py-0.5 text-xs text-teal-700">Location</span></span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Notice</span></span>
         </div>
       )}
