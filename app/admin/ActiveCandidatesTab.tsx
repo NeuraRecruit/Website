@@ -10,7 +10,7 @@ import {
   toggleCandidateStatus,
   getCvSignedUrl,
 } from "./actions";
-import type { ActiveCandidate, CandidateStatus, CandidatePriority } from "./actions";
+import type { ActiveCandidate, CandidateStatus, CandidatePriority, EmploymentType } from "./actions";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
 
@@ -152,9 +152,11 @@ function salaryDisplay(raw: string): string {
 function SalarySelector({
   selected,
   onChange,
+  label = "Salary expectation",
 }: {
   selected: string[];
   onChange: (vals: string[]) => void;
+  label?: string;
 }) {
   const toggle = (opt: string) => {
     onChange(
@@ -164,7 +166,7 @@ function SalarySelector({
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-text-secondary">Salary expectation</label>
+      <label className="block text-xs font-medium text-text-secondary">{label}</label>
       <div className="flex flex-wrap gap-2">
         {SALARY_OPTIONS.map((opt) => {
           const active = selected.includes(opt);
@@ -247,18 +249,17 @@ function StatusSelector({
 
 const PRIORITY_STYLES: Record<CandidatePriority, string> = {
   high:   "bg-red-100 text-red-700",
-  medium: "bg-bg-secondary text-text-secondary",
+  medium: "bg-yellow-50 text-yellow-700",
   low:    "bg-gray-100 text-gray-500",
 };
 
 const PRIORITY_LABELS: Record<CandidatePriority, string> = {
   high:   "High priority",
-  medium: "",
+  medium: "Medium priority",
   low:    "Low priority",
 };
 
 function PriorityBadge({ priority }: { priority: CandidatePriority }) {
-  if (priority === "medium") return null;
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_STYLES[priority]}`}>
       {PRIORITY_LABELS[priority]}
@@ -302,6 +303,40 @@ function PrioritySelector({
   );
 }
 
+// ─── Employment type selector ────────────────────────────────────────────
+
+function EmploymentTypeSelector({
+  value,
+  onChange,
+}: {
+  value: EmploymentType;
+  onChange: (v: EmploymentType) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium text-text-secondary">Employment type</label>
+      <div className="flex flex-wrap gap-2">
+        {(["permanent", "contractor"] as EmploymentType[]).map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onChange(opt)}
+            className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors capitalize ${
+              value === opt
+                ? opt === "permanent"
+                  ? "border-blue-400 bg-blue-100 text-blue-700"
+                  : "border-orange-400 bg-orange-100 text-orange-700"
+                : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
+            }`}
+          >
+            {opt === "permanent" ? "Permanent" : "Contractor"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Add / Edit form ──────────────────────────────────────────────────────
 
 const EMPTY_FORM = {
@@ -312,6 +347,7 @@ const EMPTY_FORM = {
   job_title: "",
   desired_role: "",
   location: "",
+  current_salary: "",
   salary_expectation: "",
   day_rate: "",
   previous_roles: "",
@@ -321,6 +357,7 @@ const EMPTY_FORM = {
   notes: "",
   status: "available" as CandidateStatus,
   priority: "medium" as CandidatePriority,
+  employment_type: "permanent" as EmploymentType,
 };
 
 type FormValues = typeof EMPTY_FORM;
@@ -334,6 +371,7 @@ function fieldFromCandidate(c: ActiveCandidate): FormValues {
     job_title: c.job_title ?? "",
     desired_role: c.desired_role ?? "",
     location: c.location ?? "",
+    current_salary: c.current_salary ?? "",
     salary_expectation: c.salary_expectation ?? "",
     day_rate: c.day_rate ?? "",
     previous_roles: c.previous_roles ?? "",
@@ -343,6 +381,7 @@ function fieldFromCandidate(c: ActiveCandidate): FormValues {
     notes: c.notes ?? "",
     status: c.status,
     priority: c.priority,
+    employment_type: c.employment_type,
   };
 }
 
@@ -417,6 +456,9 @@ function CandidateForm({
 }) {
   const base = initial ?? EMPTY_FORM;
   const [values, setValues] = useState<FormValues>(base);
+  const [currentSalarySelected, setCurrentSalarySelected] = useState<string[]>(() =>
+    parseSalary(base.current_salary)
+  );
   const [salarySelected, setSalarySelected] = useState<string[]>(() =>
     parseSalary(base.salary_expectation)
   );
@@ -430,9 +472,11 @@ function CandidateForm({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     // Inject computed fields not captured by native form inputs
+    formData.set("current_salary", currentSalarySelected.join(","));
     formData.set("salary_expectation", salarySelected.join(","));
     formData.set("status", values.status);
     formData.set("priority", values.priority);
+    formData.set("employment_type", values.employment_type);
     setError(null);
     startTransition(async () => {
       try {
@@ -475,6 +519,12 @@ function CandidateForm({
         onChange={(v) => setValues((prev) => ({ ...prev, priority: v }))}
       />
 
+      {/* Employment type */}
+      <EmploymentTypeSelector
+        value={values.employment_type as EmploymentType}
+        onChange={(v) => setValues((prev) => ({ ...prev, employment_type: v }))}
+      />
+
       {/* Contact */}
       <div>
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Contact</p>
@@ -500,7 +550,8 @@ function CandidateForm({
       <div>
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Compensation</p>
         <div className="space-y-3">
-          <SalarySelector selected={salarySelected} onChange={setSalarySelected} />
+          <SalarySelector label="Current salary" selected={currentSalarySelected} onChange={setCurrentSalarySelected} />
+          <SalarySelector label="Desired salary" selected={salarySelected} onChange={setSalarySelected} />
           <LabelledInput label="Day rate" name="day_rate" value={values.day_rate} onChange={set("day_rate")} placeholder="£350/day" />
         </div>
       </div>
@@ -564,7 +615,7 @@ function CandidateForm({
 
 // ─── Individual candidate row ─────────────────────────────────────────────
 
-type ChipColor = "grey" | "blue" | "purple" | "teal" | "amber" | "slate";
+type ChipColor = "grey" | "blue" | "purple" | "teal" | "amber" | "slate" | "orange" | "green";
 
 const CHIP_COLORS: Record<ChipColor, string> = {
   grey:   "bg-bg-secondary text-text-secondary",
@@ -573,6 +624,8 @@ const CHIP_COLORS: Record<ChipColor, string> = {
   teal:   "bg-teal-50 text-teal-700",
   amber:  "bg-amber-50 text-amber-700",
   slate:  "bg-slate-100 text-slate-600",
+  orange: "bg-orange-50 text-orange-700",
+  green:  "bg-emerald-50 text-emerald-700",
 };
 
 function Chip({ label, color = "grey" }: { label: string; color?: ChipColor }) {
@@ -643,17 +696,22 @@ function CandidateRow({
 
   const name = candidate.full_name || "Unnamed candidate";
 
-  const salaryChip = candidate.salary_expectation
+  const currentSalaryChip = candidate.current_salary
+    ? salaryDisplay(candidate.current_salary)
+    : null;
+  const desiredSalaryChip = candidate.salary_expectation
     ? salaryDisplay(candidate.salary_expectation)
     : candidate.day_rate || null;
 
   const chips: { label: string; color: ChipColor }[] = [
-    candidate.job_title   ? { label: candidate.job_title,   color: "blue"   } : null,
+    { label: candidate.employment_type === "contractor" ? "Contractor" : "Permanent", color: candidate.employment_type === "contractor" ? "orange" : "blue" },
+    candidate.job_title    ? { label: candidate.job_title,    color: "blue"   } : null,
     candidate.desired_role ? { label: candidate.desired_role, color: "purple" } : null,
-    candidate.location    ? { label: candidate.location,    color: "teal"   } : null,
-    salaryChip            ? { label: salaryChip,            color: "amber"  } : null,
+    candidate.location     ? { label: candidate.location,     color: "teal"   } : null,
+    currentSalaryChip      ? { label: `on ${currentSalaryChip}`,  color: "green"  } : null,
+    desiredSalaryChip      ? { label: `wants ${desiredSalaryChip}`, color: "amber" } : null,
     candidate.notice_period ? { label: `${candidate.notice_period} notice`, color: "slate" } : null,
-    candidate.phone       ? { label: candidate.phone,       color: "grey"   } : null,
+    candidate.phone        ? { label: candidate.phone,        color: "grey"   } : null,
   ].filter(Boolean) as { label: string; color: ChipColor }[];
 
   const handleDelete = () => {
@@ -724,10 +782,11 @@ function CandidateRow({
               </div>
 
               {/* Role & comp */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Field label="Current job title" value={candidate.job_title} />
+                <Field label="Current salary" value={candidate.current_salary} />
                 <Field label="Desired role" value={candidate.desired_role} />
-                <Field label="Salary expectation" value={candidate.salary_expectation} />
+                <Field label="Desired salary" value={candidate.salary_expectation} />
                 <Field label="Day rate" value={candidate.day_rate} />
                 <Field label="Notice period" value={candidate.notice_period} />
                 <Field label="Availability" value={candidate.availability} />
@@ -806,6 +865,7 @@ export function ActiveCandidatesTab({
   const [showForm, setShowForm] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState<ActiveCandidate | null>(null);
   const [search, setSearch] = useState("");
+  const [empFilter, setEmpFilter] = useState<"all" | EmploymentType>("all");
   const [, startRefresh] = useTransition();
   const router = useRouter();
 
@@ -816,6 +876,7 @@ export function ActiveCandidatesTab({
 
   const filtered = candidates
     .filter((c) => {
+      if (empFilter !== "all" && c.employment_type !== empFilter) return false;
       if (!search.trim()) return true;
       const q = search.toLowerCase();
       return [c.full_name, c.desired_role, c.job_title, c.location, c.qualifications]
@@ -852,7 +913,7 @@ export function ActiveCandidatesTab({
     <div className="space-y-4">
       {/* Top bar */}
       {!showForm && (
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
             placeholder="Search by name, role, location…"
@@ -860,13 +921,43 @@ export function ActiveCandidatesTab({
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 w-full max-w-xs rounded-lg border border-border bg-white px-3 text-sm text-text-light placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
+          {/* Employment type filter */}
+          <div className="flex rounded-lg border border-border bg-white overflow-hidden text-xs font-medium">
+            {(["all", "permanent", "contractor"] as const).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setEmpFilter(opt)}
+                className={`px-3 py-1.5 capitalize transition-colors ${
+                  empFilter === opt
+                    ? "bg-accent text-white"
+                    : "text-text-secondary hover:bg-bg-secondary"
+                }`}
+              >
+                {opt === "all" ? "All" : opt === "permanent" ? "Permanent" : "Contractors"}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             onClick={() => { setEditingCandidate(null); setShowForm(true); }}
-            className="flex-shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="ml-auto flex-shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             + Add candidate
           </button>
+        </div>
+      )}
+
+      {/* Colour legend */}
+      {!showForm && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5 rounded-lg border border-border bg-white px-3 py-2">
+          <span className="text-xs font-medium text-text-secondary mr-1 self-center">Legend:</span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700">Current role</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700">Desired role</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-teal-50 px-2 py-0.5 text-xs text-teal-700">Location</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">Current salary</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Desired salary</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Notice</span></span>
         </div>
       )}
 

@@ -131,6 +131,7 @@ export async function deleteContactMessage(id: string): Promise<void> {
 
 export type CandidateStatus = "available" | "in_work" | "unavailable";
 export type CandidatePriority = "high" | "medium" | "low";
+export type EmploymentType = "permanent" | "contractor";
 
 export type ActiveCandidate = {
   id: string;
@@ -141,6 +142,7 @@ export type ActiveCandidate = {
   job_title: string | null;
   desired_role: string | null;
   location: string | null;
+  current_salary: string | null;
   salary_expectation: string | null;
   day_rate: string | null;
   previous_roles: string | null;
@@ -151,6 +153,7 @@ export type ActiveCandidate = {
   notes: string | null;
   status: CandidateStatus;
   priority: CandidatePriority;
+  employment_type: EmploymentType;
   created_at: string;
   updated_at: string;
 };
@@ -194,6 +197,10 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
   const priority: CandidatePriority =
     rawPriority === "high" || rawPriority === "low" ? rawPriority : "medium";
 
+  const rawEmpType = (formData.get("employment_type") as string | null)?.trim();
+  const employment_type: EmploymentType =
+    rawEmpType === "contractor" ? "contractor" : "permanent";
+
   const { error } = await admin.from("active_candidates").insert({
     full_name: optStr(formData, "full_name"),
     email: optStr(formData, "email"),
@@ -202,6 +209,7 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
     job_title: optStr(formData, "job_title"),
     desired_role: optStr(formData, "desired_role"),
     location: optStr(formData, "location"),
+    current_salary: optStr(formData, "current_salary"),
     salary_expectation: optStr(formData, "salary_expectation"),
     day_rate: optStr(formData, "day_rate"),
     previous_roles: optStr(formData, "previous_roles"),
@@ -212,6 +220,7 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
     cv_storage_path: cvStoragePath,
     status,
     priority,
+    employment_type,
   });
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
@@ -241,6 +250,10 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
   const priority: CandidatePriority =
     rawPriority === "high" || rawPriority === "low" ? rawPriority : "medium";
 
+  const rawEmpType = (formData.get("employment_type") as string | null)?.trim();
+  const employment_type: EmploymentType =
+    rawEmpType === "contractor" ? "contractor" : "permanent";
+
   const updates: Record<string, string | null> = {
     full_name: optStr(formData, "full_name"),
     email: optStr(formData, "email"),
@@ -249,6 +262,7 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
     job_title: optStr(formData, "job_title"),
     desired_role: optStr(formData, "desired_role"),
     location: optStr(formData, "location"),
+    current_salary: optStr(formData, "current_salary"),
     salary_expectation: optStr(formData, "salary_expectation"),
     day_rate: optStr(formData, "day_rate"),
     previous_roles: optStr(formData, "previous_roles"),
@@ -258,6 +272,7 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
     notes: optStr(formData, "notes"),
     status,
     priority,
+    employment_type,
     updated_at: new Date().toISOString(),
   };
   if (cvStoragePath !== undefined) updates.cv_storage_path = cvStoragePath;
