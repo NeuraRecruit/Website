@@ -322,7 +322,7 @@ export function AdminDashboard({
     { id: "applications", label: "Applications", mobileLabel: "Apps", count: applications.length, newCount: applications.filter((a) => !a.processed).length },
     { id: "enquiries",    label: "Enquiries",    mobileLabel: "Enqs", count: enquiries.length,    newCount: enquiries.filter((e) => !e.processed).length },
     { id: "messages",     label: "Messages",     mobileLabel: "Msgs", count: messages.length,     newCount: messages.filter((m) => !m.processed).length },
-    { id: "pool",         label: "Active Candidates", mobileLabel: "Pool", count: activeCandidates.length, newCount: 0 },
+    { id: "pool",         label: "Hot Candidates",    mobileLabel: "Hot",  count: activeCandidates.length, newCount: 0 },
     { id: "companies",    label: "Companies",    mobileLabel: "Cos",  count: companies.length,    newCount: 0 },
   ];
 

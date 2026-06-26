@@ -145,6 +145,8 @@ export type ActiveCandidate = {
   current_salary: string | null;
   salary_expectation: string | null;
   day_rate: string | null;
+  current_day_rate: string | null;
+  desired_day_rate: string | null;
   previous_roles: string | null;
   qualifications: string | null;
   notice_period: string | null;
@@ -214,7 +216,8 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
     location: optStr(formData, "location"),
     current_salary: optStr(formData, "current_salary"),
     salary_expectation: optStr(formData, "salary_expectation"),
-    day_rate: optStr(formData, "day_rate"),
+    current_day_rate: optStr(formData, "current_day_rate"),
+    desired_day_rate: optStr(formData, "desired_day_rate"),
     previous_roles: optStr(formData, "previous_roles"),
     qualifications: optStr(formData, "qualifications"),
     notice_period: optStr(formData, "notice_period"),
@@ -270,7 +273,8 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
     location: optStr(formData, "location"),
     current_salary: optStr(formData, "current_salary"),
     salary_expectation: optStr(formData, "salary_expectation"),
-    day_rate: optStr(formData, "day_rate"),
+    current_day_rate: optStr(formData, "current_day_rate"),
+    desired_day_rate: optStr(formData, "desired_day_rate"),
     previous_roles: optStr(formData, "previous_roles"),
     qualifications: optStr(formData, "qualifications"),
     notice_period: optStr(formData, "notice_period"),

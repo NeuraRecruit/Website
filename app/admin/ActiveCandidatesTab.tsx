@@ -7,7 +7,6 @@ import {
   createActiveCandidate,
   updateActiveCandidate,
   deleteActiveCandidate,
-  toggleCandidateStatus,
   getCvSignedUrl,
 } from "./actions";
 import type { ActiveCandidate, CandidateStatus, CandidatePriority, EmploymentType } from "./actions";
@@ -62,12 +61,6 @@ const NOTICE_WEIGHT: Record<string, number> = {
   "2 months": 5,
   "3 months": 6,
   "3 months+": 7,
-};
-
-const STATUS_WEIGHT: Record<CandidateStatus, number> = {
-  available: 0,
-  in_work: 1,
-  unavailable: 2,
 };
 
 const PRIORITY_WEIGHT: Record<string, number> = {
@@ -133,6 +126,115 @@ function parseSalaryNums(raw: string): number[] {
     .split(",")
     .map((s) => parseInt(s.trim().replace("k", "")))
     .filter((n) => !isNaN(n));
+}
+
+// Parse day rate string (e.g. "350", "350,450", "£350/day") → number(s)
+function parseDayRateNums(raw: string): number[] {
+  return raw
+    .split(",")
+    .map((s) => parseInt(s.trim().replace(/[£/day\s]/gi, "")))
+    .filter((n) => !isNaN(n));
+}
+
+function parseDayRate(raw: string): number | null {
+  return parseDayRateNums(raw)[0] ?? null;
+}
+
+function dayRateDisplay(raw: string): string {
+  const nums = parseDayRateNums(raw).sort((a, b) => a - b);
+  if (!nums.length) return "";
+  if (nums.length === 1) return `£${nums[0]}/day`;
+  return `£${nums[0]}–£${nums[nums.length - 1]}/day`;
+}
+
+const DAY_RATE_QUICK_PICKS = [200, 300, 400, 500, 600, 700, 800, 900, 1000];
+
+function DayRateStepInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  const adj = (delta: number) => {
+    if (value === null) return;
+    onChange(Math.max(50, Math.min(5000, value + delta)));
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs font-medium text-text-secondary">{label}</label>
+      <div className="flex flex-wrap gap-1.5">
+        {DAY_RATE_QUICK_PICKS.map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(value === n ? null : n)}
+            className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+              value === n
+                ? "border-accent bg-accent text-white"
+                : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
+            }`}
+          >
+            £{n}
+          </button>
+        ))}
+      </div>
+      {value !== null && (
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => adj(-10)}
+            className="rounded border border-border bg-white px-2.5 py-1 text-sm font-semibold text-text-secondary hover:bg-bg-secondary">
+            −
+          </button>
+          <span className="min-w-[5rem] text-center text-sm font-bold text-text-light">£{value}/day</span>
+          <button type="button" onClick={() => adj(+10)}
+            className="rounded border border-border bg-white px-2.5 py-1 text-sm font-semibold text-text-secondary hover:bg-bg-secondary">
+            +
+          </button>
+          <button type="button" onClick={() => onChange(null)}
+            className="ml-1 text-xs text-text-secondary/60 hover:text-text-secondary">
+            Clear
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DayRateRangePicker({
+  min,
+  max,
+  onChangeMin,
+  onChangeMax,
+}: {
+  min: number | null;
+  max: number | null;
+  onChangeMin: (v: number | null) => void;
+  onChangeMax: (v: number | null) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-medium text-text-secondary">Desired day rate</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <DayRateStepInput label="From" value={min} onChange={onChangeMin} />
+        <DayRateStepInput label="To" value={max} onChange={onChangeMax} />
+      </div>
+      {(min !== null || max !== null) && (
+        <p className="text-xs text-text-secondary">
+          Range:{" "}
+          <span className="font-medium text-text-light">
+            {min !== null && max !== null && min !== max
+              ? `£${min}–£${max}/day+`
+              : min !== null
+              ? `£${min}/day+`
+              : `up to £${max}/day`}
+          </span>
+        </p>
+      )}
+    </div>
+  );
 }
 
 // Build display string from raw stored value (e.g. "57k" → "£57k", "57k,75k" → "£57k–£75k")
@@ -229,47 +331,6 @@ function SalaryRangePicker({
           </span>
         </p>
       )}
-    </div>
-  );
-}
-
-// ─── Status selector ──────────────────────────────────────────────────────
-
-const STATUS_FORM_OPTIONS: { value: CandidateStatus; label: string; cls: string }[] = [
-  { value: "available",   label: "Available",   cls: "border-emerald-400 bg-emerald-100 text-emerald-700" },
-  { value: "in_work",     label: "In work",     cls: "border-orange-400 bg-orange-100 text-orange-700" },
-  { value: "unavailable", label: "Unavailable", cls: "border-red-400 bg-red-100 text-red-600" },
-];
-
-function StatusSelector({
-  value,
-  onChange,
-}: {
-  value: CandidateStatus;
-  onChange: (v: CandidateStatus) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-text-secondary">Status</label>
-      <div className="flex flex-wrap gap-2">
-        {STATUS_FORM_OPTIONS.map((opt) => {
-          const active = value === opt.value;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onChange(opt.value)}
-              className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition-colors ${
-                active
-                  ? opt.cls
-                  : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -397,13 +458,13 @@ const EMPTY_FORM = {
   location: "",
   current_salary: "",
   salary_expectation: "",
-  day_rate: "",
+  current_day_rate: "",
+  desired_day_rate: "",
   previous_roles: "",
   qualifications: "",
   notice_period: "",
   availability: "",
   notes: "",
-  status: "available" as CandidateStatus,
   priority: "medium" as CandidatePriority,
   employment_type: "permanent",
   seniority: "",
@@ -422,13 +483,13 @@ function fieldFromCandidate(c: ActiveCandidate): FormValues {
     location: c.location ?? "",
     current_salary: c.current_salary ?? "",
     salary_expectation: c.salary_expectation ?? "",
-    day_rate: c.day_rate ?? "",
+    current_day_rate: c.current_day_rate ?? c.day_rate ?? "",
+    desired_day_rate: c.desired_day_rate ?? "",
     previous_roles: c.previous_roles ?? "",
     qualifications: c.qualifications ?? "",
     notice_period: c.notice_period ?? "",
     availability: c.availability ?? "",
     notes: c.notes ?? "",
-    status: c.status,
     priority: c.priority,
     employment_type: c.employment_type,
     seniority: c.seniority ?? "",
@@ -540,6 +601,17 @@ function CandidateForm({
     const nums = parseSalaryNums(base.salary_expectation).sort((a, b) => a - b);
     return nums.length > 1 ? nums[nums.length - 1] : nums[0] ?? null;
   });
+  const [dayRateNum, setDayRateNum] = useState<number | null>(() =>
+    parseDayRate(base.current_day_rate)
+  );
+  const [desiredDayRateMin, setDesiredDayRateMin] = useState<number | null>(() => {
+    const nums = parseDayRateNums(base.desired_day_rate).sort((a, b) => a - b);
+    return nums[0] ?? null;
+  });
+  const [desiredDayRateMax, setDesiredDayRateMax] = useState<number | null>(() => {
+    const nums = parseDayRateNums(base.desired_day_rate).sort((a, b) => a - b);
+    return nums.length > 1 ? nums[nums.length - 1] : nums[0] ?? null;
+  });
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
@@ -573,7 +645,11 @@ function CandidateForm({
       .filter((n): n is number => n !== null)
       .map((n) => `${n}k`);
     formData.set("salary_expectation", [...new Set(desiredParts)].join(","));
-    formData.set("status", values.status);
+    formData.set("current_day_rate", dayRateNum !== null ? `${dayRateNum}` : "");
+    const desiredDayRateParts = [desiredDayRateMin, desiredDayRateMax]
+      .filter((n): n is number => n !== null)
+      .map((n) => `${n}`);
+    formData.set("desired_day_rate", [...new Set(desiredDayRateParts)].join(","));
     formData.set("priority", values.priority);
     formData.set("employment_type", values.employment_type);
     formData.set("seniority", values.seniority);
@@ -644,12 +720,6 @@ function CandidateForm({
         </div>
       )}
 
-      {/* Status */}
-      <StatusSelector
-        value={values.status as CandidateStatus}
-        onChange={(v) => setValues((prev) => ({ ...prev, status: v }))}
-      />
-
       {/* Priority */}
       <PrioritySelector
         value={values.priority as CandidatePriority}
@@ -717,7 +787,13 @@ function CandidateForm({
         <div className="space-y-3">
           <SalaryStepInput label="Current salary" value={currentSalaryNum} onChange={setCurrentSalaryNum} />
           <SalaryRangePicker min={desiredMin} max={desiredMax} onChangeMin={setDesiredMin} onChangeMax={setDesiredMax} />
-          <LabelledInput label="Day rate" name="day_rate" value={values.day_rate} onChange={set("day_rate")} placeholder="£350/day" />
+          <DayRateStepInput label="Current day rate" value={dayRateNum} onChange={setDayRateNum} />
+          <DayRateRangePicker
+            min={desiredDayRateMin}
+            max={desiredDayRateMax}
+            onChangeMin={setDesiredDayRateMin}
+            onChangeMax={setDesiredDayRateMax}
+          />
         </div>
       </div>
 
@@ -805,26 +881,6 @@ function Chip({ label, color = "grey" }: { label: string; color?: ChipColor }) {
 
 const STATUS_CYCLE: CandidateStatus[] = ["available", "in_work", "unavailable"];
 
-const STATUS_STYLES: Record<CandidateStatus, string> = {
-  available:   "bg-emerald-100 text-emerald-700 hover:bg-emerald-200",
-  in_work:     "bg-orange-100 text-orange-700 hover:bg-orange-200",
-  unavailable: "bg-red-100 text-red-600 hover:bg-red-200",
-};
-
-const STATUS_LABELS: Record<CandidateStatus, string> = {
-  available:   "Available",
-  in_work:     "In work",
-  unavailable: "Unavailable",
-};
-
-function StatusBadge({ status }: { status: CandidateStatus }) {
-  return (
-    <span className={`inline-flex flex-shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[status]}`}>
-      {STATUS_LABELS[status]}
-    </span>
-  );
-}
-
 function CandidateRow({
   candidate,
   onEdit,
@@ -843,7 +899,14 @@ function CandidateRow({
     : null;
   const desiredSalaryChip = candidate.salary_expectation
     ? salaryDisplay(candidate.salary_expectation)
-    : candidate.day_rate || null;
+    : null;
+  const currentDayRateRaw = candidate.current_day_rate ?? candidate.day_rate ?? "";
+  const currentDayRateChip = currentDayRateRaw
+    ? dayRateDisplay(currentDayRateRaw)
+    : null;
+  const desiredDayRateChip = candidate.desired_day_rate
+    ? dayRateDisplay(candidate.desired_day_rate)
+    : null;
 
   const empTypes = (candidate.employment_type ?? "permanent").split(",").map((s) => s.trim());
   const empChips: { label: string; color: ChipColor }[] = empTypes.includes("permanent") && empTypes.includes("contractor")
@@ -856,8 +919,10 @@ function CandidateRow({
     ...empChips,
     candidate.job_title    ? { label: candidate.job_title,    color: "blue"   } : null,
     currentSalaryChip      ? { label: `on ${currentSalaryChip}`,    color: "green"  } : null,
+    currentDayRateChip     ? { label: `on ${currentDayRateChip}`,   color: "green"  } : null,
     candidate.desired_role ? { label: candidate.desired_role, color: "purple" } : null,
     desiredSalaryChip      ? { label: `wants ${desiredSalaryChip}+`, color: "amber"  } : null,
+    desiredDayRateChip     ? { label: `wants ${desiredDayRateChip}+`, color: "amber"  } : null,
     candidate.location     ? { label: candidate.location,     color: "teal"   } : null,
     candidate.notice_period ? { label: `${candidate.notice_period} notice`, color: "slate" } : null,
     candidate.phone        ? { label: candidate.phone,        color: "grey"   } : null,
@@ -883,7 +948,6 @@ function CandidateRow({
       >
         <div className="min-w-0 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <p className="font-semibold text-text-light">{name}</p>
-          <StatusBadge status={candidate.status} />
           <PriorityBadge priority={candidate.priority} />
           {chips.map((c) => (
             <Chip key={c.label} label={c.label} color={c.color} />
@@ -921,8 +985,7 @@ function CandidateRow({
                     {/* All fields — consistent 2-column grid */}
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
 
-                    {/* Status & Priority */}
-                    <Field label="Status" value={STATUS_LABELS[candidate.status]} />
+                    {/* Priority */}
                     <Field label="Priority" value={PRIORITY_LABELS[candidate.priority]} />
                     <Field label="Employment type" value={
                       (candidate.employment_type ?? "permanent")
@@ -965,7 +1028,8 @@ function CandidateRow({
                     <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
                     <Field label="Desired role" value={candidate.desired_role} />
                     <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
-                    <Field label="Day rate" value={candidate.day_rate} />
+                    <Field label="Current day rate" value={currentDayRateRaw ? dayRateDisplay(currentDayRateRaw) : null} />
+                    <Field label="Desired day rate" value={candidate.desired_day_rate ? dayRateDisplay(candidate.desired_day_rate) : null} />
                     <Field label="Notice period" value={candidate.notice_period} />
                     <Field label="Availability" value={candidate.availability} />
 
@@ -1055,6 +1119,8 @@ export function ActiveCandidatesTab({
   const [search, setSearch] = useState("");
   const [empFilter, setEmpFilter] = useState<"all" | EmploymentType>("all");
   const [seniorityFilter, setSeniorityFilter] = useState<"all" | "junior" | "senior">("all");
+  const [salarySort, setSalarySort] = useState<"default" | "asc" | "desc">("default");
+  const [dayRateSort, setDayRateSort] = useState<"default" | "asc" | "desc">("default");
   const [, startRefresh] = useTransition();
   const router = useRouter();
 
@@ -1067,14 +1133,33 @@ export function ActiveCandidatesTab({
     .filter((c) => {
       if (empFilter !== "all" && !(c.employment_type ?? "permanent").split(",").includes(empFilter)) return false;
       if (seniorityFilter !== "all" && c.seniority !== seniorityFilter) return false;
+      // Salary sort: only show candidates with a salary value
+      if (salarySort !== "default") {
+        const hasSalary = parseSalaryNums(c.current_salary ?? "").length > 0
+          || parseSalaryNums(c.salary_expectation ?? "").length > 0;
+        if (!hasSalary) return false;
+      }
+      // Day rate sort: only show candidates with a current day rate
+      if (dayRateSort !== "default") {
+        const hasDayRate = parseDayRateNums(c.current_day_rate ?? c.day_rate ?? "").length > 0;
+        if (!hasDayRate) return false;
+      }
       if (!search.trim()) return true;
       const q = search.toLowerCase();
       return [c.full_name, c.desired_role, c.job_title, c.location, c.qualifications]
         .some((v) => v?.toLowerCase().includes(q));
     })
     .sort((a, b) => {
-      const statusDiff = STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status];
-      if (statusDiff !== 0) return statusDiff;
+      if (salarySort !== "default") {
+        const salA = parseSalaryNums(a.current_salary ?? "")[0] ?? parseSalaryNums(a.salary_expectation ?? "")[0] ?? 0;
+        const salB = parseSalaryNums(b.current_salary ?? "")[0] ?? parseSalaryNums(b.salary_expectation ?? "")[0] ?? 0;
+        return salarySort === "asc" ? salA - salB : salB - salA;
+      }
+      if (dayRateSort !== "default") {
+        const drA = parseDayRateNums(a.current_day_rate ?? a.day_rate ?? "")[0] ?? 0;
+        const drB = parseDayRateNums(b.current_day_rate ?? b.day_rate ?? "")[0] ?? 0;
+        return dayRateSort === "asc" ? drA - drB : drB - drA;
+      }
       const priorityDiff = (PRIORITY_WEIGHT[a.priority] ?? 1) - (PRIORITY_WEIGHT[b.priority] ?? 1);
       if (priorityDiff !== 0) return priorityDiff;
       const aw = a.notice_period ? (NOTICE_WEIGHT[a.notice_period] ?? 99) : 99;
@@ -1101,7 +1186,7 @@ export function ActiveCandidatesTab({
 
   return (
     <div className="space-y-4">
-      {/* Top bar */}
+      {/* Top bar — search, filters, add */}
       {!showForm && (
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -1111,6 +1196,7 @@ export function ActiveCandidatesTab({
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 w-full max-w-xs rounded-lg border border-border bg-white px-3 text-sm text-text-light placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
+
           {/* Employment type filter */}
           <div className="flex rounded-lg border border-border bg-white overflow-hidden text-xs font-medium">
             {(["all", "permanent", "contractor"] as const).map((opt) => (
@@ -1146,13 +1232,81 @@ export function ActiveCandidatesTab({
               </button>
             ))}
           </div>
+
           <button
             type="button"
             onClick={() => { setEditingCandidate(null); setShowForm(true); }}
             className="ml-auto flex-shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
-            + Add candidate
+            + Add
           </button>
+        </div>
+      )}
+
+      {/* Sort bar */}
+      {!showForm && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Sort</span>
+
+          {/* Salary sort */}
+          <div className="flex rounded-lg border border-border bg-white overflow-hidden text-xs font-medium">
+            {([
+              { id: "default", label: "Salary" },
+              { id: "asc",     label: "Low → High" },
+              { id: "desc",    label: "High → Low" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => { setSalarySort(opt.id); if (opt.id !== "default") setDayRateSort("default"); }}
+                className={`px-3 py-1.5 transition-colors ${
+                  salarySort === opt.id
+                    ? "bg-accent text-white"
+                    : "text-text-secondary hover:bg-bg-secondary"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Day rate sort */}
+          <div className="flex rounded-lg border border-border bg-white overflow-hidden text-xs font-medium">
+            {([
+              { id: "default", label: "Current Day Rate" },
+              { id: "asc",     label: "Low → High" },
+              { id: "desc",    label: "High → Low" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => { setDayRateSort(opt.id); if (opt.id !== "default") setSalarySort("default"); }}
+                className={`px-3 py-1.5 transition-colors ${
+                  dayRateSort === opt.id
+                    ? "bg-accent text-white"
+                    : "text-text-secondary hover:bg-bg-secondary"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Reset button — only shown when something is non-default */}
+          {(empFilter !== "all" || seniorityFilter !== "all" || salarySort !== "default" || dayRateSort !== "default") && (
+            <button
+              type="button"
+              onClick={() => {
+                setEmpFilter("all");
+                setSeniorityFilter("all");
+                setSalarySort("default");
+                setDayRateSort("default");
+              }}
+              className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-text-secondary hover:border-red-300 hover:text-red-500 transition-colors"
+            >
+              ↺ Reset
+            </button>
+          )}
         </div>
       )}
 
@@ -1194,7 +1348,7 @@ export function ActiveCandidatesTab({
       {!showForm && (
         initialCandidates.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border py-16 text-center">
-            <p className="text-sm text-text-secondary">No active candidates yet</p>
+            <p className="text-sm text-text-secondary">No hot candidates yet</p>
             <p className="mt-1 text-xs text-text-secondary/60">Click &quot;+ Add candidate&quot; to add someone to the pool</p>
           </div>
         ) : filtered.length === 0 ? (
