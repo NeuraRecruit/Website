@@ -517,11 +517,13 @@ function CandidateForm({
   onCancel,
   onSaved,
   editingId,
+  existingCandidates = [],
 }: {
   initial?: FormValues;
   onCancel: () => void;
   onSaved: () => void;
   editingId?: string;
+  existingCandidates?: ActiveCandidate[];
 }) {
   const base = initial ?? EMPTY_FORM;
   const [values, setValues] = useState<FormValues>(base);
@@ -540,24 +542,15 @@ function CandidateForm({
   });
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [savedFormData, setSavedFormData] = useState<FormData | null>(null);
 
   const set = (key: keyof FormValues) => (v: string) =>
     setValues((prev) => ({ ...prev, [key]: v }));
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    // Inject computed fields not captured by native form inputs
-    formData.set("current_salary", currentSalaryNum !== null ? `${currentSalaryNum}k` : "");
-    const desiredParts = [desiredMin, desiredMax]
-      .filter((n): n is number => n !== null)
-      .map((n) => `${n}k`);
-    formData.set("salary_expectation", [...new Set(desiredParts)].join(","));
-    formData.set("status", values.status);
-    formData.set("priority", values.priority);
-    formData.set("employment_type", values.employment_type);
-    formData.set("seniority", values.seniority);
+  const doSave = (formData: FormData) => {
     setError(null);
+    setDuplicateWarning(null);
     startTransition(async () => {
       try {
         if (editingId) {
@@ -572,6 +565,47 @@ function CandidateForm({
     });
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    formData.set("current_salary", currentSalaryNum !== null ? `${currentSalaryNum}k` : "");
+    const desiredParts = [desiredMin, desiredMax]
+      .filter((n): n is number => n !== null)
+      .map((n) => `${n}k`);
+    formData.set("salary_expectation", [...new Set(desiredParts)].join(","));
+    formData.set("status", values.status);
+    formData.set("priority", values.priority);
+    formData.set("employment_type", values.employment_type);
+    formData.set("seniority", values.seniority);
+
+    // Duplicate check (skip current candidate when editing)
+    const others = existingCandidates.filter((c) => c.id !== editingId);
+    const nameInput = values.full_name.trim().toLowerCase();
+    const phoneInput = values.phone.trim().replace(/\s+/g, "");
+    const dupReasons: string[] = [];
+
+    if (nameInput) {
+      const nameMatch = others.find(
+        (c) => (c.full_name ?? "").trim().toLowerCase() === nameInput
+      );
+      if (nameMatch) dupReasons.push(`name matches "${nameMatch.full_name}"`);
+    }
+    if (phoneInput) {
+      const phoneMatch = others.find(
+        (c) => (c.phone ?? "").replace(/\s+/g, "") === phoneInput
+      );
+      if (phoneMatch) dupReasons.push(`phone matches "${phoneMatch.full_name || phoneMatch.phone}"`);
+    }
+
+    if (dupReasons.length > 0) {
+      setSavedFormData(formData);
+      setDuplicateWarning(`Possible duplicate — ${dupReasons.join(" and ")}.`);
+      return;
+    }
+
+    doSave(formData);
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -584,6 +618,29 @@ function CandidateForm({
       {error && (
         <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
+        </div>
+      )}
+
+      {duplicateWarning && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 space-y-2">
+          <p className="text-sm font-medium text-amber-800">⚠ Duplicate alert</p>
+          <p className="text-sm text-amber-700">{duplicateWarning}</p>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => savedFormData && doSave(savedFormData)}
+              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
+            >
+              Save anyway
+            </button>
+            <button
+              type="button"
+              onClick={() => { setDuplicateWarning(null); setSavedFormData(null); }}
+              className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100"
+            >
+              Go back
+            </button>
+          </div>
         </div>
       )}
 
@@ -1127,6 +1184,7 @@ export function ActiveCandidatesTab({
               editingId={editingCandidate?.id}
               onCancel={handleCancel}
               onSaved={handleSaved}
+              existingCandidates={candidates}
             />
           </motion.div>
         )}
