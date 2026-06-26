@@ -140,6 +140,7 @@ export type ActiveCandidate = {
   phone: string | null;
   linkedin_url: string | null;
   job_title: string | null;
+  current_company: string | null;
   desired_role: string | null;
   location: string | null;
   current_salary: string | null;
@@ -212,6 +213,7 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
     phone: optStr(formData, "phone"),
     linkedin_url: optStr(formData, "linkedin_url"),
     job_title: optStr(formData, "job_title"),
+    current_company: optStr(formData, "current_company"),
     desired_role: optStr(formData, "desired_role"),
     location: optStr(formData, "location"),
     current_salary: optStr(formData, "current_salary"),
@@ -269,6 +271,7 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
     phone: optStr(formData, "phone"),
     linkedin_url: optStr(formData, "linkedin_url"),
     job_title: optStr(formData, "job_title"),
+    current_company: optStr(formData, "current_company"),
     desired_role: optStr(formData, "desired_role"),
     location: optStr(formData, "location"),
     current_salary: optStr(formData, "current_salary"),

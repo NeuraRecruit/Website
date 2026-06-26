@@ -454,6 +454,7 @@ const EMPTY_FORM = {
   phone: "",
   linkedin_url: "",
   job_title: "",
+  current_company: "",
   desired_role: "",
   location: "",
   current_salary: "",
@@ -479,6 +480,7 @@ function fieldFromCandidate(c: ActiveCandidate): FormValues {
     phone: c.phone ?? "",
     linkedin_url: c.linkedin_url ?? "",
     job_title: c.job_title ?? "",
+    current_company: c.current_company ?? "",
     desired_role: c.desired_role ?? "",
     location: c.location ?? "",
     current_salary: c.current_salary ?? "",
@@ -748,6 +750,7 @@ function CandidateForm({
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Role</p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <LabelledInput label="Current job title" name="job_title" value={values.job_title} onChange={set("job_title")} placeholder="HSE Advisor" />
+          <LabelledInput label="Current company" name="current_company" value={values.current_company} onChange={set("current_company")} placeholder="ABC Construction" />
           <LabelledInput label="Desired role" name="desired_role" value={values.desired_role} onChange={set("desired_role")} placeholder="H&S Manager" />
           <LabelledInput label="Location" name="location" value={values.location} onChange={set("location")} placeholder="London" />
         </div>
@@ -918,6 +921,7 @@ function CandidateRow({
   const chips: { label: string; color: ChipColor }[] = [
     ...empChips,
     candidate.job_title    ? { label: candidate.job_title,    color: "blue"   } : null,
+    candidate.current_company ? { label: candidate.current_company, color: "sky" } : null,
     currentSalaryChip      ? { label: `on ${currentSalaryChip}`,    color: "green"  } : null,
     currentDayRateChip     ? { label: `on ${currentDayRateChip}`,   color: "green"  } : null,
     candidate.desired_role ? { label: candidate.desired_role, color: "purple" } : null,
@@ -1025,6 +1029,7 @@ function CandidateRow({
 
                     {/* Role & Comp */}
                     <Field label="Current job title" value={candidate.job_title} />
+                    <Field label="Current company" value={candidate.current_company} />
                     <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
                     <Field label="Desired role" value={candidate.desired_role} />
                     <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
@@ -1146,7 +1151,7 @@ export function ActiveCandidatesTab({
       }
       if (!search.trim()) return true;
       const q = search.toLowerCase();
-      return [c.full_name, c.desired_role, c.job_title, c.location, c.qualifications]
+      return [c.full_name, c.desired_role, c.job_title, c.current_company, c.location, c.qualifications]
         .some((v) => v?.toLowerCase().includes(q));
     })
     .sort((a, b) => {
@@ -1315,6 +1320,7 @@ export function ActiveCandidatesTab({
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 rounded-lg border border-border bg-white px-3 py-2">
           <span className="text-xs font-medium text-text-secondary mr-1 self-center">Legend:</span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700">Current role</span></span>
+          <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-sky-50 px-2 py-0.5 text-xs text-sky-700">Current company</span></span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">Current salary</span></span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700">Desired role</span></span>
           <span className="flex items-center gap-1.5 text-xs"><span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Desired salary</span></span>
