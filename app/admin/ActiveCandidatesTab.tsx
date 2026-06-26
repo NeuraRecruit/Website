@@ -802,86 +802,109 @@ function CandidateRow({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-border px-4 pb-4 pt-4 space-y-4">
-              {/* Status / priority / employment type */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <Field label="Status" value={STATUS_LABELS[candidate.status]} />
-                <Field label="Priority" value={PRIORITY_LABELS[candidate.priority]} />
-                <Field label="Employment type" value={
-                  (candidate.employment_type ?? "permanent")
-                    .split(",")
-                    .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
-                    .join(" + ")
-                } />
-              </div>
+            <div className="border-t border-border px-4 pb-4 pt-4">
+              {/* Two-column layout: fields left (2/3), notes right (1/3) */}
+              <div className="flex gap-4">
 
-              {/* Contact */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-                <div className="col-span-2 lg:col-span-3">
-                  <Field label="Email" value={
-                    candidate.email
-                      ? <a href={`mailto:${candidate.email}`} className="hover:text-accent">{candidate.email}</a>
-                      : null
-                  } />
-                </div>
-                <Field label="Phone" value={candidate.phone} />
-                <Field label="LinkedIn" value={
-                  candidate.linkedin_url
-                    ? <a href={candidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-accent break-all">{candidate.linkedin_url}</a>
-                    : null
-                } />
-                <Field label="Location" value={candidate.location} />
-              </div>
+                {/* ── Left column ── */}
+                <div className="min-w-0 flex-1 space-y-4">
 
-              {/* Role & comp */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Field label="Current job title" value={candidate.job_title} />
-                <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
-                <Field label="Desired role" value={candidate.desired_role} />
-                <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
-                <Field label="Day rate" value={candidate.day_rate} />
-                <Field label="Notice period" value={candidate.notice_period} />
-                <Field label="Availability" value={candidate.availability} />
-              </div>
+                  {/* Status / priority / employment type */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <Field label="Status" value={STATUS_LABELS[candidate.status]} />
+                    <Field label="Priority" value={PRIORITY_LABELS[candidate.priority]} />
+                    <Field label="Employment type" value={
+                      (candidate.employment_type ?? "permanent")
+                        .split(",")
+                        .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
+                        .join(" + ")
+                    } />
+                  </div>
 
-              {/* Background */}
-              {candidate.previous_roles && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">Previous roles</p>
-                  <p className="mt-1.5 whitespace-pre-wrap rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
-                    {candidate.previous_roles}
-                  </p>
-                </div>
-              )}
-              {candidate.qualifications && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">Qualifications</p>
-                  <p className="mt-1.5 rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
-                    {candidate.qualifications}
-                  </p>
-                </div>
-              )}
-              {candidate.notes && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">Notes</p>
-                  <p className="mt-1.5 whitespace-pre-wrap rounded-lg bg-bg-secondary px-4 py-3 text-sm leading-relaxed text-text-secondary">
-                    {candidate.notes}
-                  </p>
-                </div>
-              )}
+                  {/* Contact */}
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Contact</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <Field label="Email" value={
+                          candidate.email
+                            ? <a href={`mailto:${candidate.email}`} className="hover:text-accent">{candidate.email}</a>
+                            : null
+                        } />
+                      </div>
+                      <Field label="Phone" value={candidate.phone} />
+                      <Field label="Location" value={candidate.location} />
+                      <div className="col-span-2">
+                        <Field label="LinkedIn" value={
+                          candidate.linkedin_url
+                            ? <a href={candidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-accent break-all">{candidate.linkedin_url}</a>
+                            : null
+                        } />
+                      </div>
+                    </div>
+                  </div>
 
-              {/* CV */}
-              {candidate.cv_storage_path && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-text-secondary/60">CV</p>
-                  <div className="mt-1.5">
-                    <CvDownloadButton storagePath={candidate.cv_storage_path} />
+                  {/* Role & compensation */}
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Role &amp; Compensation</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Current job title" value={candidate.job_title} />
+                      <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
+                      <Field label="Desired role" value={candidate.desired_role} />
+                      <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
+                      <Field label="Day rate" value={candidate.day_rate} />
+                      <Field label="Notice period" value={candidate.notice_period} />
+                      <Field label="Availability" value={candidate.availability} />
+                    </div>
+                  </div>
+
+                  {/* Background */}
+                  {(candidate.previous_roles || candidate.qualifications) && (
+                    <div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Background</p>
+                      <div className="space-y-2">
+                        {candidate.previous_roles && (
+                          <div>
+                            <p className="text-xs text-text-secondary">Previous roles</p>
+                            <p className="mt-1 whitespace-pre-wrap rounded-lg bg-bg-secondary px-3 py-2 text-sm leading-relaxed text-text-secondary">
+                              {candidate.previous_roles}
+                            </p>
+                          </div>
+                        )}
+                        {candidate.qualifications && (
+                          <div>
+                            <p className="text-xs text-text-secondary">Qualifications</p>
+                            <p className="mt-1 rounded-lg bg-bg-secondary px-3 py-2 text-sm leading-relaxed text-text-secondary">
+                              {candidate.qualifications}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CV */}
+                  {candidate.cv_storage_path && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">CV</p>
+                      <CvDownloadButton storagePath={candidate.cv_storage_path} />
+                    </div>
+                  )}
+
+                </div>{/* end left column */}
+
+                {/* ── Right column: Notes (1/3 width, full height) ── */}
+                <div className="w-1/3 flex-shrink-0 flex flex-col">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Notes</p>
+                  <div className="flex-1 rounded-lg bg-bg-secondary px-3 py-2 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap min-h-[120px]">
+                    {candidate.notes || <span className="text-text-secondary/40 italic">No notes</span>}
                   </div>
                 </div>
-              )}
+
+              </div>{/* end two-column flex */}
 
               {/* Actions */}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-4">
                 <button
                   type="button"
                   onClick={() => onEdit(candidate)}
