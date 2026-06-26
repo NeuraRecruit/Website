@@ -154,6 +154,7 @@ export type ActiveCandidate = {
   status: CandidateStatus;
   priority: CandidatePriority;
   employment_type: EmploymentType;
+  seniority: "junior" | "senior" | null;
   created_at: string;
   updated_at: string;
 };
@@ -200,6 +201,9 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
   const employment_type: EmploymentType =
     (formData.get("employment_type") as string | null)?.trim() || "permanent";
 
+  const rawSeniority = (formData.get("seniority") as string | null)?.trim();
+  const seniority = rawSeniority === "junior" || rawSeniority === "senior" ? rawSeniority : null;
+
   const { error } = await admin.from("active_candidates").insert({
     full_name: optStr(formData, "full_name"),
     email: optStr(formData, "email"),
@@ -220,6 +224,7 @@ export async function createActiveCandidate(formData: FormData): Promise<void> {
     status,
     priority,
     employment_type,
+    seniority,
   });
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
@@ -252,6 +257,9 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
   const employment_type: EmploymentType =
     (formData.get("employment_type") as string | null)?.trim() || "permanent";
 
+  const rawSeniority = (formData.get("seniority") as string | null)?.trim();
+  const seniority = rawSeniority === "junior" || rawSeniority === "senior" ? rawSeniority : null;
+
   const updates: Record<string, string | null> = {
     full_name: optStr(formData, "full_name"),
     email: optStr(formData, "email"),
@@ -271,6 +279,7 @@ export async function updateActiveCandidate(id: string, formData: FormData): Pro
     status,
     priority,
     employment_type,
+    seniority,
     updated_at: new Date().toISOString(),
   };
   if (cvStoragePath !== undefined) updates.cv_storage_path = cvStoragePath;

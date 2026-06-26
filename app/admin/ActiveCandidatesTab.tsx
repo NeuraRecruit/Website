@@ -406,6 +406,7 @@ const EMPTY_FORM = {
   status: "available" as CandidateStatus,
   priority: "medium" as CandidatePriority,
   employment_type: "permanent",
+  seniority: "",
 };
 
 type FormValues = typeof EMPTY_FORM;
@@ -430,6 +431,7 @@ function fieldFromCandidate(c: ActiveCandidate): FormValues {
     status: c.status,
     priority: c.priority,
     employment_type: c.employment_type,
+    seniority: c.seniority ?? "",
   };
 }
 
@@ -463,6 +465,13 @@ function LabelledInput({
   );
 }
 
+function normaliseText(raw: string): string {
+  return raw
+    .replace(/\r\n/g, "\n")   // Windows CRLF → LF
+    .replace(/\r/g, "\n")     // old Mac CR → LF
+    .replace(/\n{3,}/g, "\n\n"); // 3+ blank lines → max 1 blank line
+}
+
 function LabelledTextarea({
   label,
   name,
@@ -478,13 +487,23 @@ function LabelledTextarea({
   placeholder?: string;
   rows?: number;
 }) {
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text/plain");
+    const el = e.currentTarget;
+    const before = el.value.slice(0, el.selectionStart ?? 0);
+    const after  = el.value.slice(el.selectionEnd ?? 0);
+    onChange(normaliseText(before + pasted + after));
+  };
+
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-medium text-text-secondary">{label}</label>
       <textarea
         name={name}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(normaliseText(e.target.value))}
+        onPaste={handlePaste}
         placeholder={placeholder}
         rows={rows}
         className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-light placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
@@ -537,6 +556,7 @@ function CandidateForm({
     formData.set("status", values.status);
     formData.set("priority", values.priority);
     formData.set("employment_type", values.employment_type);
+    formData.set("seniority", values.seniority);
     setError(null);
     startTransition(async () => {
       try {
@@ -603,6 +623,34 @@ function CandidateForm({
           <LabelledInput label="Current job title" name="job_title" value={values.job_title} onChange={set("job_title")} placeholder="HSE Advisor" />
           <LabelledInput label="Desired role" name="desired_role" value={values.desired_role} onChange={set("desired_role")} placeholder="H&S Manager" />
           <LabelledInput label="Location" name="location" value={values.location} onChange={set("location")} placeholder="London" />
+        </div>
+        {/* Seniority */}
+        <div className="mt-3 space-y-1.5">
+          <label className="block text-xs font-medium text-text-secondary">Seniority</label>
+          <div className="flex gap-2">
+            {(["junior", "senior"] as const).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setValues((prev) => ({ ...prev, seniority: prev.seniority === opt ? "" : opt }))}
+                className={`rounded-lg border px-4 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  values.seniority === opt
+                    ? opt === "senior"
+                      ? "border-violet-400 bg-violet-100 text-violet-700"
+                      : "border-sky-400 bg-sky-100 text-sky-700"
+                    : "border-border bg-white text-text-secondary hover:border-accent/40 hover:text-text-light"
+                }`}
+              >
+                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+              </button>
+            ))}
+            {values.seniority && (
+              <button type="button" onClick={() => setValues((prev) => ({ ...prev, seniority: "" }))}
+                className="text-xs text-text-secondary/60 hover:text-text-secondary">
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -675,7 +723,7 @@ function CandidateForm({
 
 // ─── Individual candidate row ─────────────────────────────────────────────
 
-type ChipColor = "grey" | "blue" | "purple" | "teal" | "amber" | "slate" | "orange" | "green";
+type ChipColor = "grey" | "blue" | "purple" | "teal" | "amber" | "slate" | "orange" | "green" | "violet" | "sky";
 
 const CHIP_COLORS: Record<ChipColor, string> = {
   grey:   "bg-bg-secondary text-text-secondary",
@@ -686,6 +734,8 @@ const CHIP_COLORS: Record<ChipColor, string> = {
   slate:  "bg-slate-100 text-slate-600",
   orange: "bg-orange-50 text-orange-700",
   green:  "bg-emerald-50 text-emerald-700",
+  violet: "bg-violet-50 text-violet-700",
+  sky:    "bg-sky-50 text-sky-700",
 };
 
 function Chip({ label, color = "grey" }: { label: string; color?: ChipColor }) {
@@ -817,14 +867,17 @@ function CandidateRow({
                     {/* Status & Priority */}
                     <Field label="Status" value={STATUS_LABELS[candidate.status]} />
                     <Field label="Priority" value={PRIORITY_LABELS[candidate.priority]} />
-                    <div className="col-span-2">
-                      <Field label="Employment type" value={
-                        (candidate.employment_type ?? "permanent")
-                          .split(",")
-                          .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
-                          .join(" + ")
-                      } />
-                    </div>
+                    <Field label="Employment type" value={
+                      (candidate.employment_type ?? "permanent")
+                        .split(",")
+                        .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
+                        .join(" + ")
+                    } />
+                    <Field label="Seniority" value={
+                      candidate.seniority
+                        ? candidate.seniority.charAt(0).toUpperCase() + candidate.seniority.slice(1)
+                        : null
+                    } />
 
                     {/* Divider */}
                     <div className="col-span-2 border-t border-border" />
@@ -900,7 +953,7 @@ function CandidateRow({
                 <div className="w-2/5 flex-shrink-0 flex flex-col">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Notes</p>
                   <div className="flex-1 rounded-lg bg-bg-secondary px-3 py-2 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap min-h-[120px]">
-                    {candidate.notes || <span className="text-text-secondary/40 italic">No notes</span>}
+                    {candidate.notes ? normaliseText(candidate.notes) : <span className="text-text-secondary/40 italic">No notes</span>}
                   </div>
                 </div>
 
@@ -944,6 +997,7 @@ export function ActiveCandidatesTab({
   const [editingCandidate, setEditingCandidate] = useState<ActiveCandidate | null>(null);
   const [search, setSearch] = useState("");
   const [empFilter, setEmpFilter] = useState<"all" | EmploymentType>("all");
+  const [seniorityFilter, setSeniorityFilter] = useState<"all" | "junior" | "senior">("all");
   const [, startRefresh] = useTransition();
   const router = useRouter();
 
@@ -955,6 +1009,7 @@ export function ActiveCandidatesTab({
   const filtered = candidates
     .filter((c) => {
       if (empFilter !== "all" && !(c.employment_type ?? "permanent").split(",").includes(empFilter)) return false;
+      if (seniorityFilter !== "all" && c.seniority !== seniorityFilter) return false;
       if (!search.trim()) return true;
       const q = search.toLowerCase();
       return [c.full_name, c.desired_role, c.job_title, c.location, c.qualifications]
@@ -1013,6 +1068,24 @@ export function ActiveCandidatesTab({
                 }`}
               >
                 {opt === "all" ? "All" : opt === "permanent" ? "Permanent" : "Contractors"}
+              </button>
+            ))}
+          </div>
+
+          {/* Seniority filter */}
+          <div className="flex rounded-lg border border-border bg-white overflow-hidden text-xs font-medium">
+            {(["all", "junior", "senior"] as const).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setSeniorityFilter(opt)}
+                className={`px-3 py-1.5 capitalize transition-colors ${
+                  seniorityFilter === opt
+                    ? "bg-accent text-white"
+                    : "text-text-secondary hover:bg-bg-secondary"
+                }`}
+              >
+                {opt === "all" ? "All levels" : opt.charAt(0).toUpperCase() + opt.slice(1)}
               </button>
             ))}
           </div>
