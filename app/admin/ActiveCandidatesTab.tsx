@@ -809,53 +809,54 @@ function CandidateRow({
                 {/* ── Left column ── */}
                 <div className="min-w-0 flex-1 space-y-4">
 
-                  {/* Status / priority / employment type */}
-                  <div className="grid grid-cols-3 gap-3">
+                    {/* All fields — consistent 2-column grid */}
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+
+                    {/* Status & Priority */}
                     <Field label="Status" value={STATUS_LABELS[candidate.status]} />
                     <Field label="Priority" value={PRIORITY_LABELS[candidate.priority]} />
-                    <Field label="Employment type" value={
-                      (candidate.employment_type ?? "permanent")
-                        .split(",")
-                        .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
-                        .join(" + ")
-                    } />
-                  </div>
-
-                  {/* Contact */}
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Contact</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="col-span-2">
-                        <Field label="Email" value={
-                          candidate.email
-                            ? <a href={`mailto:${candidate.email}`} className="hover:text-accent">{candidate.email}</a>
-                            : null
-                        } />
-                      </div>
-                      <Field label="Phone" value={candidate.phone} />
-                      <Field label="Location" value={candidate.location} />
-                      <div className="col-span-2">
-                        <Field label="LinkedIn" value={
-                          candidate.linkedin_url
-                            ? <a href={candidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-accent break-all">{candidate.linkedin_url}</a>
-                            : null
-                        } />
-                      </div>
+                    <div className="col-span-2">
+                      <Field label="Employment type" value={
+                        (candidate.employment_type ?? "permanent")
+                          .split(",")
+                          .map((s) => s.trim() === "contractor" ? "Contractor" : "Permanent")
+                          .join(" + ")
+                      } />
                     </div>
-                  </div>
 
-                  {/* Role & compensation */}
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Role &amp; Compensation</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Field label="Current job title" value={candidate.job_title} />
-                      <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
-                      <Field label="Desired role" value={candidate.desired_role} />
-                      <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
-                      <Field label="Day rate" value={candidate.day_rate} />
-                      <Field label="Notice period" value={candidate.notice_period} />
-                      <Field label="Availability" value={candidate.availability} />
+                    {/* Divider */}
+                    <div className="col-span-2 border-t border-border" />
+
+                    {/* Contact */}
+                    <div className="col-span-2">
+                      <Field label="Email" value={
+                        candidate.email
+                          ? <a href={`mailto:${candidate.email}`} className="hover:text-accent">{candidate.email}</a>
+                          : null
+                      } />
                     </div>
+                    <Field label="Phone" value={candidate.phone} />
+                    <Field label="Location" value={candidate.location} />
+                    <div className="col-span-2">
+                      <Field label="LinkedIn" value={
+                        candidate.linkedin_url
+                          ? <a href={candidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-accent break-all">{candidate.linkedin_url}</a>
+                          : null
+                      } />
+                    </div>
+
+                    {/* Divider */}
+                    <div className="col-span-2 border-t border-border" />
+
+                    {/* Role & Comp */}
+                    <Field label="Current job title" value={candidate.job_title} />
+                    <Field label="Current salary" value={candidate.current_salary ? salaryDisplay(candidate.current_salary) : null} />
+                    <Field label="Desired role" value={candidate.desired_role} />
+                    <Field label="Desired salary" value={candidate.salary_expectation ? salaryDisplay(candidate.salary_expectation) : null} />
+                    <Field label="Day rate" value={candidate.day_rate} />
+                    <Field label="Notice period" value={candidate.notice_period} />
+                    <Field label="Availability" value={candidate.availability} />
+
                   </div>
 
                   {/* Background */}
