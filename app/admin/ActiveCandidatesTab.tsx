@@ -469,12 +469,14 @@ function LabelledTextarea({
   value,
   onChange,
   placeholder,
+  rows = 3,
 }: {
   label: string;
   name: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  rows?: number;
 }) {
   return (
     <div className="space-y-1.5">
@@ -484,8 +486,8 @@ function LabelledTextarea({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={3}
-        className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-light placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+        rows={rows}
+        className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-light placeholder:text-text-secondary/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
       />
     </div>
   );
@@ -647,7 +649,7 @@ function CandidateForm({
               className="text-sm text-text-secondary file:mr-3 file:rounded-lg file:border file:border-border file:bg-white file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-text-secondary"
             />
           </div>
-          <LabelledTextarea label="Internal notes" name="notes" value={values.notes} onChange={set("notes")} placeholder="Referred by..., great attitude, available from..." />
+          <LabelledTextarea label="Internal notes" name="notes" value={values.notes} onChange={set("notes")} placeholder="Referred by..., great attitude, available from..." rows={10} />
         </div>
       </div>
 
@@ -895,7 +897,7 @@ function CandidateRow({
                 </div>{/* end left column */}
 
                 {/* ── Right column: Notes (1/3 width, full height) ── */}
-                <div className="w-1/3 flex-shrink-0 flex flex-col">
+                <div className="w-2/5 flex-shrink-0 flex flex-col">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary/60">Notes</p>
                   <div className="flex-1 rounded-lg bg-bg-secondary px-3 py-2 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap min-h-[120px]">
                     {candidate.notes || <span className="text-text-secondary/40 italic">No notes</span>}
