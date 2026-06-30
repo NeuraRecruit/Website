@@ -5,17 +5,17 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Neura Recruitment. Send us a message or request a callback — we'd love to hear from you.",
+    "Get in touch with Neura Recruitment. Call James or Deividas directly, send us a message, or request a callback.",
 };
 
 export default function ContactPage() {
   return (
     <Section className="min-h-[80vh] pt-28 sm:pt-32" blueprint>
-      <div className="mx-auto w-full max-w-xl">
+      <div className="mx-auto w-full max-w-2xl">
         <SectionHeader
           eyebrow="Contact"
-          title="Send us a message"
-          description="Have a question or want to find out more? Drop us a line and we'll get back to you."
+          title="Call or send us a message"
+          description="Prefer to talk? Call James or Deividas directly — or drop us a line below and we'll get back to you."
           align="center"
           className="mb-8 sm:mb-10"
         />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeader } from "@/components/ui/Section";
+import { FOUNDERS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "About",
@@ -120,12 +121,20 @@ export default function AboutPage() {
               <p className="mt-1 text-center text-sm text-accent">Co-Founder</p>
               <p className="mt-1 text-center">
                 <a
-                  href="https://www.linkedin.com/in/deividas-grigas-553225187"
+                  href={FOUNDERS.deividas.linkedIn}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-text-secondary transition-colors hover:text-accent"
                 >
                   LinkedIn
+                </a>
+              </p>
+              <p className="mt-1 text-center">
+                <a
+                  href={FOUNDERS.deividas.phoneHref}
+                  className="text-sm text-text-secondary transition-colors hover:text-accent"
+                >
+                  {FOUNDERS.deividas.phone}
                 </a>
               </p>
             </div>
@@ -146,12 +155,20 @@ export default function AboutPage() {
             <p className="mt-1 text-center text-sm text-accent">Co-Founder</p>
             <p className="mt-1 text-center">
               <a
-                href="https://www.linkedin.com/in/jamescoxrecruitment"
+                href={FOUNDERS.james.linkedIn}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-text-secondary transition-colors hover:text-accent"
               >
                 LinkedIn
+              </a>
+            </p>
+            <p className="mt-1 text-center">
+              <a
+                href={FOUNDERS.james.phoneHref}
+                className="text-sm text-text-secondary transition-colors hover:text-accent"
+              >
+                {FOUNDERS.james.phone}
               </a>
             </p>
           </div>
