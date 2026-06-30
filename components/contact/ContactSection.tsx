@@ -1,10 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { Card } from "@/components/ui/Card";
 import { FOUNDERS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 
 function FounderContact({
   name,
@@ -29,33 +27,14 @@ function FounderContact({
 }
 
 export function ContactSection() {
-  const [requestCallback, setRequestCallback] = useState(false);
-  const formRef = useRef<HTMLDivElement>(null);
-
-  const handleRequestCallback = () => {
-    setRequestCallback(true);
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 sm:gap-x-4">
+      <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8">
         <FounderContact
           name={FOUNDERS.james.name}
           phone={FOUNDERS.james.phone}
           phoneHref={FOUNDERS.james.phoneHref}
         />
-
-        <button
-          type="button"
-          onClick={handleRequestCallback}
-          className={cn(
-            "px-1 text-center text-xs font-medium transition-colors sm:text-sm",
-            requestCallback ? "text-accent" : "text-text-secondary hover:text-accent"
-          )}
-        >
-          Request a callback
-        </button>
 
         <FounderContact
           name={FOUNDERS.deividas.name}
@@ -64,12 +43,9 @@ export function ContactSection() {
         />
       </div>
 
-      <div ref={formRef} className="mt-10 scroll-mt-28 sm:mt-12">
+      <div className="mt-10 scroll-mt-28 sm:mt-12">
         <Card>
-          <ContactForm
-            requestCallback={requestCallback}
-            onCallbackChange={setRequestCallback}
-          />
+          <ContactForm />
         </Card>
       </div>
     </>

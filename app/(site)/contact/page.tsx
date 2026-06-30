@@ -5,7 +5,7 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Neura Recruitment. Call James or Deividas directly, send us a message, or request a callback.",
+    "Get in touch with Neura Recruitment. Call James or Deividas directly, or send us a message.",
 };
 
 export default function ContactPage() {

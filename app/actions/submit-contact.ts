@@ -7,25 +7,13 @@ import { checkSpam } from "@/lib/spam";
 import { isRateLimited } from "@/lib/rate-limit";
 import { getTrustedIp } from "@/lib/request-ip";
 
-const contactSchema = z
-  .object({
-    full_name: z.string().min(2, "Name is required"),
-    email: z.string().email("Valid email required"),
-    phone: z.string().optional(),
-    company: z.string().optional(),
-    message: z.string().min(10, "Please provide more detail"),
-    request_callback: z.enum(["true", "false"]).optional(),
-  })
-  .superRefine((data, ctx) => {
-    const wantsCallback = data.request_callback === "true";
-    if (wantsCallback && (!data.phone || data.phone.length < 7)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Phone number is required for a callback",
-        path: ["phone"],
-      });
-    }
-  });
+const contactSchema = z.object({
+  full_name: z.string().min(2, "Name is required"),
+  email: z.string().email("Valid email required"),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  message: z.string().min(10, "Please provide more detail"),
+});
 
 export type ContactState = {
   success?: boolean;
@@ -50,15 +38,12 @@ export async function submitContact(
     phone: formData.get("phone") || undefined,
     company: formData.get("company") || undefined,
     message: formData.get("message"),
-    request_callback: formData.get("request_callback") === "true" ? "true" : "false",
   };
 
   const parsed = contactSchema.safeParse(raw);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
-
-  const wantsCallback = parsed.data.request_callback === "true";
 
   try {
     const supabase = createSupabaseClient();
@@ -68,7 +53,7 @@ export async function submitContact(
       phone: parsed.data.phone || null,
       company: parsed.data.company || null,
       message: parsed.data.message,
-      request_callback: wantsCallback,
+      request_callback: false,
     });
 
     if (error) {
@@ -81,7 +66,7 @@ export async function submitContact(
       phone: parsed.data.phone ?? null,
       company: parsed.data.company ?? null,
       message: parsed.data.message,
-      request_callback: wantsCallback,
+      request_callback: false,
     }).catch(() => null);
 
     return { success: true };
