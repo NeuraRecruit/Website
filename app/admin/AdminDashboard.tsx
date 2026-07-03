@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -336,14 +337,22 @@ export function AdminDashboard({
             </p>
             <h1 className="mt-0.5 text-lg font-semibold text-text-light">Admin</h1>
           </div>
-          <form action={adminLogout}>
-            <button
-              type="submit"
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/tasks"
               className="rounded-lg border border-border bg-white px-4 py-2 text-sm text-text-secondary transition-colors hover:text-text-light"
             >
-              Sign out
-            </button>
-          </form>
+              Tasks
+            </Link>
+            <form action={adminLogout}>
+              <button
+                type="submit"
+                className="rounded-lg border border-border bg-white px-4 py-2 text-sm text-text-secondary transition-colors hover:text-text-light"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="flex gap-1 rounded-xl border border-border bg-white p-1">

@@ -101,6 +101,40 @@ ${row("Message", `<span style="white-space:pre-wrap">${escapeHtml(data.message)}
   });
 }
 
+export async function sendTaskReminderNotification(data: {
+  title: string;
+  description: string | null;
+  priority: string;
+  due_at: string;
+  assignee: string | null;
+  candidate_name: string | null;
+  notify_to: string;
+  isRepeat: boolean;
+  isOverdue: boolean;
+}) {
+  const subjectSuffix = data.isOverdue && data.isRepeat ? " (overdue)" : "";
+  const assigneeLine = data.assignee
+    ? data.assignee.charAt(0).toUpperCase() + data.assignee.slice(1)
+    : "Unassigned";
+
+  const body = `<table cellpadding="0" cellspacing="0" style="width:100%">
+${row("Task", escapeHtml(data.title))}
+${row("Priority", escapeHtml(data.priority))}
+${row("Due", escapeHtml(new Date(data.due_at).toLocaleString("en-GB", { dateStyle: "full", timeStyle: "short" })))}
+${row("Assignee", escapeHtml(assigneeLine))}
+${data.candidate_name ? row("Candidate", escapeHtml(data.candidate_name)) : ""}
+${data.description ? row("Description", `<span style="white-space:pre-wrap">${escapeHtml(data.description)}</span>`) : ""}
+</table>
+<p style="margin:16px 0 0;font-size:13px;color:#6b7280">Open the Neura admin panel to view or complete this task.</p>`;
+
+  await resend.emails.send({
+    from: FROM,
+    to: data.notify_to,
+    subject: `Task reminder — ${data.title}${subjectSuffix}`,
+    html: layout("Task Reminder", body),
+  });
+}
+
 export async function sendContactNotification(data: {
   full_name: string;
   email: string;
