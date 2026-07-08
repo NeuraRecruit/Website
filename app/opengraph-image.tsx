@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
-import { readFile } from "fs/promises";
-import { join } from "path";
+import { getLogoDataUri } from "@/lib/site-logo";
 
 export const runtime = "nodejs";
 export const alt = "Neura Recruitment";
@@ -8,10 +7,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logoData = await readFile(
-    join(process.cwd(), "public/images/neura-logo.png")
-  );
-  const logoSrc = `data:image/png;base64,${logoData.toString("base64")}`;
+  const logoSrc = await getLogoDataUri();
 
   return new ImageResponse(
     (

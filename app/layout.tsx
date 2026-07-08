@@ -50,6 +50,10 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
+  icons: {
+    icon: [{ url: "/icon", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+  },
   robots: { index: true, follow: true },
 };
 
@@ -60,6 +64,7 @@ const jsonLd = {
       "@type": "Organization",
       name: SITE_NAME,
       url: "https://neurarecruitment.com",
+      logo: "https://neurarecruitment.com/images/neura-logo.png",
       description: SITE_DESCRIPTION,
       email: CONTACT.email,
       telephone: CONTACT.phone,
