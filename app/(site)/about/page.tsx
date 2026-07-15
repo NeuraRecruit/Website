@@ -18,7 +18,6 @@ export default function AboutPage() {
           eyebrow="About Neura"
           title="More consultancy than agency"
           description="We founded Neura because recruitment deserved better — less noise, more substance, and relationships that last. We specialise in health &amp; safety and construction recruitment — connecting the people who keep projects safe and moving."
-          align="left"
         />
       </Section>
 

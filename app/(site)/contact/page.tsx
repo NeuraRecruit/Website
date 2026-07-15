@@ -5,7 +5,7 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Neura Recruitment. Call James or Deividas directly, or send us a message.",
+    "Get in touch with Neura Recruitment. Call us directly, or send us a message.",
 };
 
 export default function ContactPage() {
@@ -15,7 +15,7 @@ export default function ContactPage() {
         <SectionHeader
           eyebrow="Contact"
           title="Call or send us a message"
-          description="Prefer to talk? Call James or Deividas directly — or drop us a line below and we'll get back to you."
+          description="Prefer to talk? Call us directly — or drop us a line below and we'll get back to you."
           align="center"
           className="mb-8 sm:mb-10"
         />

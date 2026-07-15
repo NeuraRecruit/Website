@@ -11,7 +11,6 @@ export default function BlogPage() {
         eyebrow="Insights"
         title="Advice for health & safety and construction professionals"
         description="Practical guidance on careers, qualifications, and hiring in UK health & safety and construction."
-        align="left"
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">

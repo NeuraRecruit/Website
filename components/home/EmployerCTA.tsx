@@ -7,7 +7,7 @@ import { fadeUp } from "@/lib/motion";
 
 export function EmployerCTA() {
   return (
-    <Section className="!py-20 sm:!py-28">
+    <Section className="!pt-20 !pb-6 sm:!pt-28 sm:!pb-8">
       <motion.div
         initial="hidden"
         whileInView="visible"
