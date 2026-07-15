@@ -9,6 +9,7 @@ export const SPECIALISMS_SHORT = "Health & Safety & Construction";
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/jobs", label: "Jobs" },
+  { href: "/blog", label: "Blog" },
   { href: "/employers", label: "Employers" },
   { href: "/candidates", label: "Candidates" },
   { href: "/about", label: "About" },

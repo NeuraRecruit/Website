@@ -13,6 +13,11 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
+  const isActive = (href: string) => {
+    if (href === "/blog") return pathname.startsWith("/blog");
+    return pathname === href;
+  };
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -62,7 +67,7 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "rounded-full px-4 py-2 text-sm transition-colors hover:text-text-light",
-                    pathname === link.href
+                    isActive(link.href)
                       ? "text-text-light"
                       : "text-text-secondary"
                   )}
@@ -133,7 +138,7 @@ export function Navbar() {
                     href={link.href}
                     className={cn(
                       "block rounded-xl px-4 py-4 text-lg font-medium",
-                      pathname === link.href
+                      isActive(link.href)
                         ? "bg-accent/10 text-text-light"
                         : "text-text-secondary"
                     )}
