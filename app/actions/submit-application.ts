@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createSupabaseAdmin, createSupabaseClient } from "@/lib/supabase/server";
 import { sendCandidateNotification } from "@/lib/email";
 import { checkSpam } from "@/lib/spam";
+import { validateEmailDeliverability } from "@/lib/email-validation";
 import { isRateLimited } from "@/lib/rate-limit";
 import { getTrustedIp } from "@/lib/request-ip";
 
@@ -43,6 +44,11 @@ export async function submitApplication(
   const parsed = applicationSchema.safeParse(raw);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const emailError = await validateEmailDeliverability(parsed.data.email);
+  if (emailError) {
+    return { fieldErrors: { email: [emailError] } };
   }
 
   const cvFile = formData.get("cv") as File | null;

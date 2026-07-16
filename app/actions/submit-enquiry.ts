@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createSupabaseClient } from "@/lib/supabase/server";
 import { sendEnquiryNotification } from "@/lib/email";
 import { checkSpam } from "@/lib/spam";
+import { validateEmailDeliverability } from "@/lib/email-validation";
 import { isRateLimited } from "@/lib/rate-limit";
 import { getTrustedIp } from "@/lib/request-ip";
 
@@ -43,6 +44,11 @@ export async function submitEnquiry(
   const parsed = enquirySchema.safeParse(raw);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const emailError = await validateEmailDeliverability(parsed.data.email);
+  if (emailError) {
+    return { fieldErrors: { email: [emailError] } };
   }
 
   try {
